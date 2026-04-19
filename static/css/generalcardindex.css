@@ -1,0 +1,254 @@
+/* === Сетка из 6 карточек (3×2) === */
+.weekly-products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+/* === Карточка "Товар недели" === */
+.weekly-product {
+    position: relative;
+    width: 70%;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--card-bg);
+    border-radius: 30px;
+    text-align: center;
+    -webkit-box-shadow: 4px 4px 31px 0px rgba(124, 52, 194, 0.2);
+    -moz-box-shadow: 4px 4px 31px 0px rgba(124, 52, 194, 0.2);
+    box-shadow: 4px 4px 31px 0px rgba(124, 52, 194, 0.2);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.weekly-product:hover {
+    transform: translateY(-10px);
+}
+
+/* Неоновая подсветка — зависит от темы */
+.weekly-product::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    pointer-events: none;
+    /* Разные неоновые тени для светлой и тёмной темы */
+    box-shadow: 0 0 10px rgba(106, 17, 203, 0.4),
+    0 0 20px rgba(106, 17, 203, 0.3),
+    0 0 30px rgba(106, 17, 203, 0.2);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.dark-theme .weekly-product::before {
+    box-shadow: 0 0 15px rgba(106, 17, 203, 0.6),
+    0 0 25px rgba(106, 17, 203, 0.5),
+    0 0 40px rgba(106, 17, 203, 0.4);
+    opacity: 1;
+}
+
+.weekly-product:hover::before {
+    opacity: 1;
+}
+
+/* Лента "Товар недели" */
+.weekly-badge {
+    position: absolute;
+    top: 15px;
+    right: -30px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 40px;
+    transform: rotate(45deg);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Изображение товара */
+.weekly-product img {
+    width: 100%;
+    height: 180px; /* Фиксированная высота */
+    object-fit: contain; /* Вместо cover — чтобы видеть весь телефон */
+    border-radius: 12px;
+    margin-bottom: 16px;
+    background-color: #f9f9f9; /* Светлый фон под изображением */
+    transition: border-radius 0.3s ease;
+}
+
+.weekly-product:hover img {
+    border-radius: 16px;
+}
+
+/* Заголовок */
+.weekly-product .title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+/* Описание */
+.weekly-product .description {
+    font-size: 14px;
+    color: var(--text-primary);
+    opacity: 0.8;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+/* Цена */
+.weekly-product .price {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--btn-gradient-start);
+    margin-bottom: 20px;
+}
+
+/* Кнопка "Успей заказать" */
+.action-btn {
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--btn-gradient-start), var(--btn-gradient-end));
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.action-btn:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: translateY(-50%);
+    transition: left 0.7s ease;
+    pointer-events: none;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px rgba(106, 17, 203, 0.45);
+}
+
+.action-btn:hover:before {
+    left: 100%;
+}
+
+.action-btn:active {
+    transform: translateY(-1px);
+}
+/* Анимированный градиентный текст */
+.gradient-text {
+    background: linear-gradient(90deg, #6a11cb, #8e24aa, #00bfa5, #f57c00);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 15s ease-in-out infinite;
+    font-weight: bold;
+}
+
+/* Анимация сдвига градиента */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Эффект печати как в терминале — с поддержкой тем */
+.typewriter-text {
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    color: var(--terminal-text);
+    background-color: var(--terminal-bg);
+    padding: 15px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    min-height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    border: 1px solid var(--terminal-border);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-width: 480px;
+}
+
+/* Мигающий курсор — зависит от темы */
+.typewriter-text::after {
+    content: '|';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cursor-color);
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+/* Обёртка ссылки для карточки */
+.product-card-link {
+    text-decoration: none;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.product-card-link:hover {
+    transform: translateY(-10px);
+}
+
+/* Отмена перехода при клике на кнопку */
+.product-card-link .action-btn {
+    cursor: pointer;
+}
+
+
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .weekly-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .weekly-products-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 15px;
+    }
+}
+
+/* Центрирование карточек на мобильных */
+.weekly-products-grid .weekly-product {
+    justify-self: center;
+    width: 100%;
+    max-width: 320px;
+    margin: 0;
+}

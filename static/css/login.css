@@ -1,0 +1,142 @@
+/* === Страница входа === */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 20px;
+}
+
+.login-form {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.login-header {
+    text-align: center;
+    padding: 30px 25px 20px;
+    background: linear-gradient(135deg, var(--btn-gradient-start), var(--btn-gradient-end));
+    color: white;
+}
+
+.login-header h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.form {
+    padding: 25px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--btn-gradient-start);
+    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--btn-gradient-start), var(--btn-gradient-end));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 20px rgba(106, 17, 203, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.login-footer {
+    text-align: center;
+    padding: 20px 25px;
+    font-size: 14px;
+    color: var(--text-primary);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--sidebar-bg);
+}
+
+.forgot-link {
+    color: var(--btn-gradient-start);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+.login-footer a {
+    color: var(--btn-gradient-start);
+    text-decoration: none;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 15px;
+    }
+
+    .login-form {
+        border-radius: 16px;
+    }
+
+    .login-header,
+    .form,
+    .login-footer {
+        padding: 20px;
+    }
+
+    .submit-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+}

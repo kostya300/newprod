@@ -59,7 +59,6 @@ ehthumbs.db
 Thumbs.db
 
 # === Static & Media (если не хранятся в репозитории) ===
-/static/
 /media/
 
 # === Coverage ===
