@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Вход — ВИКИ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="login-container">
+    <section class="login-form">
+        <div class="login-header">
+            <h1>Добро пожаловать в <span class="gradient-text">ВИКИ</span></h1>
+            <p>Введите свои данные для входа</p>
+        </div>
+
+        <form method="post" class="form">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="username">Email или телефон</label>
+                <input type="text" id="username" name="username" placeholder="Введите email или номер" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+            </div>
+            <button type="submit" class="submit-btn">Войти</button>
+        </form>
+
+        <div class="login-footer">
+            <a href="#" class="forgot-link">Забыли пароль?</a>
+            <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+        </div>
+    </section>
+</main>
+{% endblock %}

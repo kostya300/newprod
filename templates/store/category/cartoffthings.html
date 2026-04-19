@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Товар — ВИКИ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cartoffthings.css' %}">
+<link rel="stylesheet" href="{% static 'css/comments.css' %}">
+{% endblock %}
+
+{% block content %}
+<header class="header">
+    <!-- Левая часть: логотип или поисковая строка -->
+    <div class="header-left">
+        <button class="search-icon-btn" id="open-search-btn">🔍</button>
+    </div>
+    <!-- Правая часть: кнопки действий -->
+    <div class="header-right">
+        <button class="icon-btn" title="Избранное">
+            <span>❤️</span>
+        </button>
+        <button class="icon-btn" title="Уведомления">
+            <span>🔔</span>
+        </button>
+        <button class="gradient-btn" onclick="window.location='{% url 'login' %}'">Войти</button>
+        <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">
+            Корзина</span>
+        </button>
+    </div>
+
+</header>
+<!-- Модальное окно поиска (скрыто по умолчанию) -->
+<div class="search-modal" id="search-modal">
+    <button class="close-search" id="close-search">&times;</button>
+    {% include "store/includes/search-form.html" %}
+</div>
+<section class="product-detail">
+    <div class="product-images">
+        <img src="{% static 'images/phantom.png' %}" alt="Phantom X2 Pro" class="main-image">
+        <div class="thumbnail-gallery">
+            <img src="{% static 'images/phantom.png' %}" alt="Фото 1" class="thumb active">
+            <img src="{% static 'images/phantom.png' %}" alt="Фото 2" class="thumb">
+            <img src="{% static 'images/phantom.png' %}" alt="Фото 3" class="thumb">
+        </div>
+    </div>
+
+    <div class="product-info">
+        <h1 class="product-title">Phantom X2 Pro</h1>
+        <div class="product-rating">
+            <div class="stars">
+                ★★★★☆
+            </div>
+            <span class="reviews">(47 отзывов)</span>
+        </div>
+
+        <p class="product-price">59 990 ₽</p>
+        <p class="product-old-price">Старая цена: <span>69 990 ₽</span></p>
+
+        <div class="product-features">
+            <ul>
+                <li>📱 8 ГБ ОЗУ, 256 ГБ ПЗУ</li>
+                <li>📷 Камера 200 МП</li>
+                <li>🔋 Аккумулятор 5000 мА·ч</li>
+                <li>⚡ Зарядка 120 Вт</li>
+                <li>🌐 5G, NFC, Bluetooth 5.3</li>
+            </ul>
+        </div>
+
+        <div class="product-actions">
+            <div class="quantity-control">
+                <button class="qty-btn minus">−</button>
+                <span class="quantity">1</span>
+                <button class="qty-btn plus">+</button>
+            </div>
+            <button class="add-to-cart-btn">
+                <span>➕</span> В корзину
+            </button>
+            <button class="like-btn" title="Добавить в избранное">
+                ❤️
+            </button>
+        </div>
+
+        <div class="delivery-info">
+            <p>🚚 Бесплатная доставка — завтра</p>
+            <p>📍 Самовывоз — сегодня</p>
+        </div>
+    </div>
+</section>
+
+<section class="product-description">
+    <h2>Описание товара</h2>
+    <p>
+        Phantom X2 Pro — флагманский смартфон нового поколения с мощнейшим процессором и камерой на 200 МП.
+        Идеален для фотографов, геймеров и тех, кто ценит производительность и стиль.
+    </p>
+    <p>
+        Ультратонкий корпус из матового стекла, защита IP68, быстрая зарядка 120 Вт и поддержка всех современных
+        технологий.
+    </p>
+</section>
+<!-- Подключаем отзывы -->
+{% include "store/comments.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/cartoffthings.js' %}"></script>
+<script src="{% static 'js/comments.js' %}"></script>
+{% endblock %}

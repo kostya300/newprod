@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Профиль — ВИКИ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="profile-container">
+    <section class="profile-header">
+        <div class="avatar-wrapper">
+            <img src="{% static '/imagesprofile/a1ece2d2bcdb3426150feec9028dffa6.png' %}" alt="Аватар" class="profile-avatar">
+            <button class="edit-avatar">✎</button>
+        </div>
+        <h1 class="profile-name">Алексей Иванов</h1>
+        <p class="profile-email">alex.ivanov@example.com</p>
+    </section>
+
+    <section class="profile-stats">
+        <div class="stat-card">
+            <h3>Заказы</h3>
+            <p class="stat-number">14</p>
+        </div>
+        <div class="stat-card">
+            <h3>Баллы</h3>
+            <p class="stat-number">850</p>
+        </div>
+        <div class="stat-card">
+            <h3>Скидка</h3>
+            <p class="stat-number">7%</p>
+        </div>
+    </section>
+
+    <section class="profile-actions">
+        <button class="action-btn">История заказов</button>
+        <button class="action-btn">Настройки</button>
+        <button class="action-btn">Выход</button>
+    </section>
+</main>
+{% endblock %}

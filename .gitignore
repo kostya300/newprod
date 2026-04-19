@@ -1,0 +1,87 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# === Virtual Environment ===
+.env
+.venv
+env/
+venv/
+
+# === Django ===
+media/
+staticfiles/
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# === PyCharm ===
+.idea/
+*.iml
+*.iws
+
+# === VS Code ===
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# === OS ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === Static & Media (если не хранятся в репозитории) ===
+/static/
+/media/
+
+# === Coverage ===
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# === Jupyter Notebook ===
+.ipynb_checkpoints
+
+# === Docker ===
+docker-compose.yml
+docker-compose.override.yml
+compose.yaml
+compose.override.yaml
+
+# === Environment variables ===
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

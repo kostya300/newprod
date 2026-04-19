@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}ВИКИ — Магазин техники{% endblock %}</title>
+
+    <!-- Блокирующий скрипт: применяем тему до загрузки стилей -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+    </script>
+
+    <!-- Стили -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header1.css' %}">
+    <link rel="stylesheet" href="{% static 'css/product-card.css' %}">
+    <link rel="stylesheet" href="{% static 'css/generalcardindex.css' %}">
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dropdownbase.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<!-- Кнопка открытия меню на мобильных -->
+<button class="menu-toggle" id="menu-toggle">☰</button>
+
+<div class="wrapper">
+    <!-- Боковое меню -->
+    <nav class="sidebar" id="sidebar">
+        <h2 class="logo">ВИКИ</h2>
+        <ul class="menu">
+            <li class="dropdown">
+                <a href="{% url 'catalog' %}" class="dropdown-link">
+                    <span class="icon">📱</span>
+                    <span class="link-text">Каталог</span>
+                    <span class="arrow">▼</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'products' %}?category=phones">Смартфоны</a></li>
+                    <li><a href="#">Планшеты</a></li>
+                    <li><a href="#">Наушники</a></li>
+                    <li><a href="#">Ноутбуки</a></li>
+                    <li><a href="#">Холодильники</a></li>
+                    <li><a href="#">Микроволновки</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="{% url 'home' %}">
+                    <span class="icon">🏠</span>
+                    <span class="link-text">Главная</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'profile' %}">
+                    <span class="icon">👤</span>
+                    <span class="link-text">Профиль</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="icon">ℹ️</span>
+                    <span class="link-text">О нас</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'contacts' %}">
+                    <span class="icon">📞</span>
+                    <span class="link-text">Контакты</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Управление -->
+        <div class="controls">
+            <button id="theme-toggle" class="theme-toggle">🌙</button>
+            <button id="collapse-toggle" class="collapse-toggle">◀</button>
+        </div>
+    </nav>
+
+    <!-- Основное содержимое -->
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<!-- Глобальные скрипты -->
+<script src="{% static 'js/searchopenandclose.js' %}">
+
+</script>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const themeToggle = document.getElementById('theme-toggle');
+    const collapseToggle = document.getElementById('collapse-toggle');
+    const menuToggle = document.getElementById('menu-toggle');
+
+    // Закрываем все выпадающие меню
+    function closeAllDropdowns(except) {
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            if (dropdown !== except) {
+                dropdown.classList.remove('open');
+            }
+        });
+    }
+    document.querySelectorAll('.dropdown').forEach(dropdown => {
+    const link = dropdown.querySelector('.dropdown-link');
+    const menu = dropdown.querySelector('.dropdown-menu');
+
+    // Клик по "Каталог" — открывает/закрывает
+    link.addEventListener('click', (e) => {
+        e.preventDefault(); // Блокируем переход при клике
+        const isOpen = dropdown.classList.toggle('open');
+
+        if (isOpen) {
+            closeAllDropdowns(dropdown); // Только одно открыто
+            window.location.href = link.getAttribute('href'); // Переход после задержки
+        }
+    });
+
+    // При клике вне — закрываем
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+});
+    // === Переключение темы ===
+    themeToggle.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark-theme');
+        const isDark = document.documentElement.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '☀️' : '🌙';
+    });
+
+    // Инициализация состояния кнопки темы
+    const isDark = document.documentElement.classList.contains('dark-theme');
+    themeToggle.textContent = isDark ? '☀️' : '🌙';
+
+    // === Свёртывание сайдбара ===
+    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+        sidebar.classList.add('collapsed');
+        collapseToggle.textContent = '▶';
+    }
+
+    collapseToggle?.addEventListener('click', () => {
+
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebar-collapsed', isCollapsed);
+        collapseToggle.textContent = isCollapsed ? '▶' : '◀';
+    });
+
+    // === Мобильное меню ===
+    menuToggle?.addEventListener('click', () => {
+        const isOpen = sidebar.classList.toggle('open');
+        menuToggle.textContent = isOpen ? '✕' : '☰';
+        document.body.classList.toggle('menu-open', isOpen);
+    });
+
+    // Закрытие при клике вне меню
+    document.addEventListener('click', (e) => {
+        const isClickInsideSidebar = sidebar.contains(e.target);
+        const isClickOnToggle = menuToggle.contains(e.target);
+
+        if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            menuToggle.textContent = '☰';
+            document.body.classList.remove('menu-open');
+        }
+    });
+
+    // Закрытие по Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            menuToggle.textContent = '☰';
+            document.body.classList.remove('menu-open');
+        }
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

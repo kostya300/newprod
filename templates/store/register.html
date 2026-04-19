@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Регистрация — ВИКИ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="login-container">
+    <section class="login-form">
+        <div class="login-header">
+            <h1>Создайте аккаунт</h1>
+            <p>Зарегистрируйтесь, чтобы получить доступ ко всем возможностям</p>
+        </div>
+
+        <form method="post" class="form">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="username">Имя и фамилия</label>
+                <input type="text" id="username" name="username" placeholder="Введите имя" required>
+            </div>
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Введите email" required>
+            </div>
+            <div class="input-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" placeholder="Введите номер" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Придумайте пароль" required>
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">Подтвердите пароль</label>
+                <input type="password" id="confirm-password" name="confirm_password" placeholder="Повторите пароль" required>
+            </div>
+            <button type="submit" class="submit-btn">Зарегистрироваться</button>
+        </form>
+
+        <div class="login-footer">
+            <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+        </div>
+    </section>
+</main>
+{% endblock %}
