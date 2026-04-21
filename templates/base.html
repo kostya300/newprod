@@ -39,12 +39,13 @@
                     <span class="arrow">▼</span>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="{% url 'products' %}?category=phones">Смартфоны</a></li>
-                    <li><a href="#">Планшеты</a></li>
-                    <li><a href="#">Наушники</a></li>
-                    <li><a href="#">Ноутбуки</a></li>
-                    <li><a href="#">Холодильники</a></li>
-                    <li><a href="#">Микроволновки</a></li>
+                    {% for category in categories %}
+                        <li>
+                            <a href="{% url 'products' %}?category={{ category.slug }}">
+                                {{ category.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </li>
             <li>
@@ -105,28 +106,29 @@
             }
         });
     }
+
     document.querySelectorAll('.dropdown').forEach(dropdown => {
-    const link = dropdown.querySelector('.dropdown-link');
-    const menu = dropdown.querySelector('.dropdown-menu');
+        const link = dropdown.querySelector('.dropdown-link');
+        const menu = dropdown.querySelector('.dropdown-menu');
 
-    // Клик по "Каталог" — открывает/закрывает
-    link.addEventListener('click', (e) => {
-        e.preventDefault(); // Блокируем переход при клике
-        const isOpen = dropdown.classList.toggle('open');
+        // Клик по "Каталог" — открывает/закрывает
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Блокируем переход при клике
+            const isOpen = dropdown.classList.toggle('open');
 
-        if (isOpen) {
-            closeAllDropdowns(dropdown); // Только одно открыто
-            window.location.href = link.getAttribute('href'); // Переход после задержки
-        }
+            if (isOpen) {
+                closeAllDropdowns(dropdown); // Только одно открыто
+                window.location.href = link.getAttribute('href'); // Переход после задержки
+            }
+        });
+
+        // При клике вне — закрываем
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
     });
-
-    // При клике вне — закрываем
-    document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
-        }
-    });
-});
     // === Переключение темы ===
     themeToggle.addEventListener('click', () => {
         document.documentElement.classList.toggle('dark-theme');

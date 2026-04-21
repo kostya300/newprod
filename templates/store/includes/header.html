@@ -1,0 +1,20 @@
+<header class="header">
+        <!-- Левая часть: логотип или поисковая строка -->
+        <div class="header-left">
+            <button class="search-icon-btn" id="open-search-btn">🔍</button>
+        </div>
+        <!-- Правая часть: кнопки действий -->
+        <div class="header-right">
+            <button class="icon-btn" title="Избранное" onclick="window.location='{% url 'favorites' %}'">
+                <span>❤️</span>
+            </button>
+            <button class="icon-btn" title="Уведомления">
+                <span>🔔</span>
+            </button>
+            <button class="gradient-btn" onclick="window.location='{% url 'login' %}'">Войти</button>
+            <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">
+                Корзина
+            </button>
+        </div>
+
+    </header>

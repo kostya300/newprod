@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Избранное — ВИКИ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/myfavorite.css' %}">
+{% endblock %}
+
+{% block content %}
+<header class="header">
+    <!-- Левая часть: логотип или поисковая строка -->
+    <div class="header-left">
+        <button class="search-icon-btn" id="open-search-btn">🔍</button>
+    </div>
+    <!-- Правая часть: кнопки действий -->
+    <div class="header-right">
+        <button class="icon-btn" title="Избранное">
+            <span>❤️</span>
+        </button>
+        <button class="icon-btn" title="Уведомления">
+            <span>🔔</span>
+        </button>
+        <button class="gradient-btn" onclick="window.location='{% url 'login' %}'">Войти</button>
+        <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">
+            Корзина
+        </button>
+    </div>
+</header>
+
+<!-- Модальное окно поиска -->
+<div class="search-modal" id="search-modal">
+    <button class="close-search" id="close-search">&times;</button>
+    {% include "store/includes/search-form.html" %}
+</div>
+
+<section class="hero">
+    <h1><span class="gradient-text">МОИ ИЗБРАННЫЕ</span></h1>
+    <p>Товары, которые вы отметили ❤️</p>
+</section>
+
+<section class="favorites-container">
+    <div class="favorites-grid" id="favorites-list">
+        <!-- Пример карточки избранного товара -->
+        <!-- Эти карточки будут добавляться через JS или Django-цикл -->
+        {% comment %}
+        {% for product in favorites %}
+        <div class="favorite-card">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="favorite-img">
+            <div class="favorite-info">
+                <h3 class="favorite-title">{{ product.name }}</h3>
+                <p class="favorite-price">{{ product.price }} ₽</p>
+            </div>
+            <button class="remove-fav" data-id="{{ product.id }}">✕</button>
+        </div>
+        {% endfor %}
+        {% endcomment %}
+
+        <!-- Пример статичной карточки (для демонстрации) -->
+        <div class="favorite-card">
+            <img src="{% static 'images/phantom.png' %}" alt="Phantom X2 Pro" class="favorite-img">
+            <div class="favorite-info">
+                <h3 class="favorite-title">Phantom X2 Pro</h3>
+                <p class="favorite-price">59 990 ₽</p>
+            </div>
+            <button class="remove-fav">✕</button>
+        </div>
+
+        <div class="favorite-card">
+            <img src="{% static 'images/phantom.png' %}" alt="UltraBook Air" class="favorite-img">
+            <div class="favorite-info">
+                <h3 class="favorite-title">UltraBook Air</h3>
+                <p class="favorite-price">74 990 ₽</p>
+            </div>
+            <button class="remove-fav">✕</button>
+        </div>
+
+        <div class="favorite-card">
+            <img src="{% static 'images/phantom.png' %}" alt="SoundWave Pro" class="favorite-img">
+            <div class="favorite-info">
+                <h3 class="favorite-title">SoundWave Pro</h3>
+                <p class="favorite-price">12 990 ₽</p>
+            </div>
+            <button class="remove-fav">✕</button>
+        </div>
+    </div>
+
+    <div class="empty-state" id="empty-state" style="display: none;">
+        <p>Вы ещё не добавили товары в избранное</p>
+        <button class="gradient-btn" onclick="window.location='{% url 'catalog' %}'">Перейти в каталог</button>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Пример работы с избранным (на реальном проекте — через API)
+    document.querySelectorAll('.remove-fav').forEach(button => {
+        button.addEventListener('click', function () {
+            const card = this.closest('.favorite-card');
+            card.remove();
+
+            // Показать "пустое состояние", если нет товаров
+            if (document.querySelectorAll('.favorite-card').length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+            }
+        });
+    });
+
+    // Открытие/закрытие модального поиска
+    const openSearchBtn = document.getElementById('open-search-btn');
+    const closeSearchBtn = document.getElementById('close-search');
+    const searchModal = document.getElementById('search-modal');
+
+    openSearchBtn?.addEventListener('click', () => {
+        searchModal.style.display = 'flex';
+    });
+
+    closeSearchBtn?.addEventListener('click', () => {
+        searchModal.style.display = 'none';
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            searchModal.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

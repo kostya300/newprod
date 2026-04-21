@@ -1,84 +1,44 @@
 {% extends "base.html" %}
-{% load static }
+{% load static %}
 {% block title %}Каталог — ВИКИ{% endblock %}
 
 {% block content %}
-<header class="header">
-    <!-- Левая часть: логотип или поисковая строка -->
-    <div class="header-left">
-        <button class="search-icon-btn" id="open-search-btn">🔍</button>
+    {% include "store/includes/header.html" %}
+    <!-- Модальное окно поиска (скрыто по умолчанию) -->
+    <div class="search-modal" id="search-modal">
+        <button class="close-search" id="close-search">&times;</button>
+        {% include "store/includes/search-form.html" %}
     </div>
-    <!-- Правая часть: кнопки действий -->
-    <div class="header-right">
-        <button class="icon-btn" title="Избранное">
-            <span>❤️</span>
-        </button>
-        <button class="icon-btn" title="Уведомления">
-            <span>🔔</span>
-        </button>
-        <button class="gradient-btn" onclick="window.location='{% url 'login' %}'">Войти</button>
-        <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">
-            Корзина
-        </button>
-    </div>
+    <section class="hero">
+        <h1><span class="gradient-text">КАТАЛОГ</span></h1>
+        <p>Выберите категорию</p>
 
-</header>
-<!-- Модальное окно поиска (скрыто по умолчанию) -->
-<div class="search-modal" id="search-modal">
-    <button class="close-search" id="close-search">&times;</button>
-    {% include "store/includes/search-form.html" %}
-</div>
-<section class="hero">
-    <h1><span class="gradient-text">КАТАЛОГ</span></h1>
-    <p>Выберите категорию</p>
+        <div class="category-grid">
+            {% for category in categories %}
+                <a href="{% url 'products' %}?category={{ category.slug }}" class="category-card">
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/150/6a11cb/ffffff?text={{ category.name|urlencode }}"
+                             alt="{{ category.name }}">
+                    {% endif %}
+                    <h3>{{ category.name }}</h3>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
 
-    <div class="category-grid">
-        <a href="{% url 'products' %}" class="category-card">
-            <img src="https://via.placeholder.com/150/6a11cb/ffffff?text=Phones" alt="Смартфоны">
-            <h3>Смартфоны</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/00bfa5/ffffff?text=Tablets" alt="Планшеты">
-            <h3>Планшеты</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/f57c00/ffffff?text=Audio" alt="Наушники">
-            <h3>Наушники</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/8e24aa/ffffff?text=Laptops" alt="Ноутбуки">
-            <h3>Ноутбуки</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/8e24aa/ffffff?text=Laptops" alt="Ноутбуки">
-            <h3>Холодильники</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/8e24aa/ffffff?text=Laptops" alt="Ноутбуки">
-            <h3>микроволновки</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/8e24aa/ffffff?text=Laptops" alt="Ноутбуки">
-            <h3>Холодильники</h3>
-        </a>
-        <a href="#" class="category-card">
-            <img src="https://via.placeholder.com/150/8e24aa/ffffff?text=Laptops" alt="Ноутбуки">
-            <h3>микроволновки</h3>
-        </a>
-    </div>
-</section>
+    <!-- Список категорий -->
+    <section class="categories">
 
-<!-- Список категорий -->
-<section class="categories">
-
-</section>
-<!-- Блокирующий скрипт для предотвращения мерцания -->
-<script>
-    // Применяем тему ДО загрузки страницы
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark-theme');
-    }
-</script>
-<script src="static/js/animateprint.js"></script>
+    </section>
+    <!-- Блокирующий скрипт для предотвращения мерцания -->
+    <script>
+        // Применяем тему ДО загрузки страницы
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+        }
+    </script>
+    <script src="{% static 'js/animateprint.js' %}"></script>
 {% endblock %}

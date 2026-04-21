@@ -7,10 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <header class="header">
-        <button class="gradient-btn" onclick="window.location='{% url 'login' %}'">Войти</button>
-        <button class="gradient-btn" onclick="window.location='{% url 'home' %}'">Домашняя</button>
-    </header>
+{% include "store/includes/header.html" %}
 
     <section class="hero">
         <h1><span class="gradient-text">КОРЗИНА</span></h1>

@@ -8,26 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<header class="header">
-    <!-- Левая часть: логотип или поисковая строка -->
-    <div class="header-left">
-        <button class="search-icon-btn" id="open-search-btn">🔍</button>
-    </div>
-    <!-- Правая часть: кнопки действий -->
-    <div class="header-right">
-        <button class="icon-btn" title="Избранное">
-            <span>❤️</span>
-        </button>
-        <button class="icon-btn" title="Уведомления">
-            <span>🔔</span>
-        </button>
-        <button class="gradient-btn" onclick="window.location='{% url 'login' %}'">Войти</button>
-        <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">
-            Корзина
-        </button>
-    </div>
-
-</header>
+{% include "store/includes/header.html" %}
 <!-- Модальное окно поиска (скрыто по умолчанию) -->
 <div class="search-modal" id="search-modal">
     <button class="close-search" id="close-search">&times;</button>
@@ -41,13 +22,12 @@
 <section class="contacts-container">
     <div class="contacts-info">
         <h2>Как с нами связаться</h2>
-
         <div class="contact-item">
             <div class="contact-icon">📞</div>
             <div class="details">
                 <h3>Телефон</h3>
-                <p><strong>Горячая линия:</strong> +7 (800) 123-45-67</p>
-                <p><strong>Техподдержка:</strong> +7 (495) 987-65-43</p>
+                <p><strong>Горячая линия:</strong> <a href="tel:+78001234567">+7 (800) 123-45-67</a></p>
+                <p><strong>Техподдержка:</strong> <a href="tel:+74959876543">+7 (495) 987-65-43</a></p>
                 <small>Ежедневно с 9:00 до 21:00</small>
             </div>
         </div>
@@ -56,8 +36,9 @@
             <div class="contact-icon">✉️</div>
             <div class="details">
                 <h3>Email</h3>
-                <p><strong>Общие вопросы:</strong> info@wiki-tech.ru</p>
-                <p><strong>Поддержка клиентов:</strong> support@wiki-tech.ru</p>
+                <p><strong>Общие вопросы:</strong> <a href="mailto:info@wiki-tech.ru">info@wiki-tech.ru</a></p>
+                <p><strong>Поддержка клиентов:</strong> <a href="mailto:support@wiki-tech.ru">support@wiki-tech.ru</a>
+                </p>
             </div>
         </div>
 
@@ -65,30 +46,47 @@
             <div class="contact-icon">📍</div>
             <div class="details">
                 <h3>Адрес</h3>
-                <p><strong>Центральный офис:</strong> г. Москва, ул. Технологическая, д. 10</p>
-                <p><strong>Пункт самовывоза:</strong> м. Курская, ТЦ «Галерея», вход Б</p>
+                <p><strong>Центральный офис:</strong>
+                    <a href="https://yandex.ru/maps/?text=г. Москва, ул. Технологическая, д. 10" target="_blank">
+                        г. Москва, ул. Технологическая, д. 10
+                    </a>
+                </p>
+                <p><strong>Пункт самовывоза:</strong>
+                    <a href="https://yandex.ru/maps/?text=м. Курская, ТЦ «Галерея», вход Б" target="_blank">
+                        м. Курская, ТЦ «Галерея», вход Б
+                    </a>
+                </p>
             </div>
         </div>
 
         <div class="contact-item">
             <div class="contact-icon">💬</div>
-            <div class="details">
+             <div class="details">
                 <h3>Мессенджеры</h3>
-                <p><strong>Telegram:</strong> @wikitech_support</p>
-                <p><strong>WhatsApp:</strong> +7 (915) 111-22-33</p>
-                <p><strong>Viber:</strong> +7 (915) 111-22-33</p>
+                <p><strong>Telegram:</strong> <a href="https://t.me/wikitech_support" target="_blank">@wikitech_support</a></p>
+                <p><strong>WhatsApp:</strong> <a href="https://wa.me/79151112233" target="_blank">+7 (915) 111-22-33</a></p>
+                <p><strong>Viber:</strong> <a href="viber://chat?number=79151112233" target="_blank">+7 (915) 111-22-33</a></p>
             </div>
         </div>
 
+
         <div class="social-links">
-            <h3>Мы в соцсетях</h3>
-            <div class="social-icons">
-                <a href="#" class="social-icon">📘</a>
-                <a href="#" class="social-icon">📷</a>
-                <a href="#" class="social-icon">▶️</a>
-                <a href="#" class="social-icon">🐦</a>
-            </div>
-        </div>
+    <h3>Мы в соцсетях</h3>
+    <div class="social-icons">
+        <a href="https://vk.com/07ix7o3" target="_blank" class="social-icon" title="Мы в ВКонтакте">
+            <img src="{% static 'images/icons/vk.png' %}" alt="ВКонтакте">
+        </a>
+        <a href="https://google.com/search?q=ВИКИ+магазин" target="_blank" class="social-icon" title="Найти в Google">
+            <img src="{% static 'images/icons/google.png' %}" alt="Google">
+        </a>
+        <a href="mailto:info@wiki-tech.ru" target="_blank" class="social-icon" title="Написать на Mail">
+            <img src="{% static 'images/icons/mailru.png' %}" alt="Mail.ru">
+        </a>
+        <a href="https://ya.ru" target="_blank" class="social-icon" title="Найти в Яндексе">
+            <img src="{% static 'images/icons/yandex.png' %}" alt="Яндекс">
+        </a>
+    </div>
+</div>
     </div>
 
     <div class="map-section">
@@ -109,6 +107,10 @@
         <button class="map-button"
                 onclick="window.open('https://yandex.ru/maps/?um=constructor%3Aa1e8f5d4f3b6e7c8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8', '_blank')">
             Открыть в Яндекс.Картах
+        </button>
+        <button class="map-button gis-maps"
+                onclick="window.open('https://2gis.ru/moscow/search/%D1%86%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BE%D1%84%D0%B8%D1%81%20%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%D0%B0%20%D0%92%D0%98%D0%9A%D0%98/firm/1234567890?m=37.617634%2C55.755814', '_blank')">
+            🧭 Открыть в 2ГИС
         </button>
     </div>
 </section>

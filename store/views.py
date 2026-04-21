@@ -1,18 +1,66 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from sympy.integrals.meijerint_doc import category
+
+from .models import Category, Product
+
 def index(request):
-    return render(request, 'store/index.html')
+    featured_products = Product.objects.filter(is_featured=True, in_stock=True)[:6]
+    categories = Category.objects.filter(is_active=True)[:6]
+    return render(request, 'store/index.html',
+                  {
+                      'featured_products': featured_products, 'categories ': categories
+                   })
+
+
 def catalog(request):
-    return render(request, 'store/catalog.html')
+    categories = Category.objects.filter(is_active=True)
+    return render(request, 'store/catalog.html', {
+        'categories': categories,
+    })
+def products(request):
+    category_slug = request.GET.get('category')
+    category = None
+    products = Product.objects.filter(in_stock=True)
+
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=category)
+
+    categories = Category.objects.filter(is_active=True)  # Для выпадающего меню
+
+    return render(request, 'store/category/products.html', {
+        'category': category,
+        'products': products,
+        'categories': categories,
+    })
+
+
+
 def profile(request):
     return render(request, 'store/profile.html')
+
+
 def login_view(request):
     return render(request, 'store/login.html')
+
+
 def register_view(request):
     return render(request, 'store/register.html')
-def products(request):
-    return render(request, 'store/category/products.html')
-def product_detail(request):
-    return render(request,'store/category/cartoffthings.html')
+
+
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    return render(request, 'store/category/cartoffthings.html',
+                  {'product': product}
+                  )
+
+
+def my_favorites(request):
+    # Здесь логика для страницы "Избранное"
+    return render(request, 'store/category/myfavorite.html')
+
+
 def cart(request):
     # Пример данных для корзины (в реальности — из сессии или БД)
     cart_items = [
@@ -39,5 +87,7 @@ def cart(request):
         },
     ]
     return render(request, 'store/cart.html', {'cart_items': cart_items})
+
+
 def contacts(request):
     return render(request, 'store/contacts.html')

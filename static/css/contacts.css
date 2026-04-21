@@ -88,7 +88,7 @@
 }
 
 .social-icon:hover {
-    background: var(--btn-gradient-start);
+    background: var();
     color: white;
     transform: translateY(-3px);
     box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3);
@@ -128,8 +128,27 @@
 
 .map-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(255, 153, 0, 0.3);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
+/* Специфичные стили для каждой карты */
+.yandex-maps {
+    background: linear-gradient(135deg, #ffcc00, #ff9900);
+    color: #000;
+}
+.gis-maps {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+/* Используем настоящие иконки через <img> — самый простой и надёжный способ */
+.social-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+}
+
 
 /* Адаптивность */
 @media (max-width: 768px) {

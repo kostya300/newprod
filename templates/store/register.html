@@ -39,6 +39,25 @@
             <button type="submit" class="submit-btn">Зарегистрироваться</button>
         </form>
 
+        <div class="social-login-divider">
+            <span>или зарегистрируйтесь через</span>
+        </div>
+
+        <div class="social-icons">
+            <a href="https://vk.com/07ix7o3" target="_blank" class="social-icon" title="Войти через ВКонтакте">
+                <img src="{% static 'images/icons/vk.png' %}" alt="ВКонтакте">
+            </a>
+            <a href="https://google.com/search?q=ВИКИ+магазин" target="_blank" class="social-icon" title="Найти в Google">
+                <img src="{% static 'images/icons/google.png' %}" alt="Google">
+            </a>
+            <a href="mailto:info@wiki-tech.ru" target="_blank" class="social-icon" title="Написать на Mail">
+                <img src="{% static 'images/icons/mailru.png' %}" alt="Mail.ru">
+            </a>
+            <a href="https://ya.ru" target="_blank" class="social-icon" title="Найти в Яндексе">
+                <img src="{% static 'images/icons/yandex.png' %}" alt="Яндекс">
+            </a>
+        </div>
+
         <div class="login-footer">
             <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
         </div>
