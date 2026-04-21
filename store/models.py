@@ -3,8 +3,8 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField('Название', max_length=100, unique=True)
     slug = models.SlugField('URL', unique=True)
-    description = models.TextField('Описание', blank=True)
-    image = models.ImageField('Изображение категории', upload_to='static/categories/', blank=True, null=True)
+    description = models.TextField('Описание', blank=True,null=True)
+    image = models.ImageField('Изображение категории', upload_to='categories/', blank=True, null=True)
     is_active = models.BooleanField('Активна', default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -17,8 +17,11 @@ class Category(models.Model):
         return self.name
 
 
+
+
+
 class Product(models.Model):
-    name = models.CharField('Название', max_length=200)
+    name = models.CharField('Название', max_length=256)
     slug = models.SlugField('URL', unique=True)
     description = models.TextField('Описание')
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
@@ -55,3 +58,15 @@ class Product(models.Model):
         if self.old_price and self.old_price > self.price:
             return round((1 - self.price / self.old_price) * 100)
         return 0
+# модель ProductImage для хранения дополнительных изображений.
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product,related_name='images',on_delete=models.CASCADE,verbose_name='Товар')
+    image = models.ImageField("Изображение", upload_to="products/gallery/")
+    order = models.PositiveIntegerField("Порядок",default=0)
+    is_main = models.BooleanField("Основное изображение", default=False)
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Изображение товара"
+        verbose_name_plural ="Галерея изображений"
+    def __str__(self):
+        return f"{self.product}- фото {self.order}"

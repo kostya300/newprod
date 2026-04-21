@@ -1,5 +1,16 @@
+# store/admin.py
 from django.contrib import admin
-from .models import Category, Product
+from .models import Category, Product, ProductImage
+
+
+# Inline для изображений товара
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 3  # Количество пустых форм для загрузки новых фото
+    fields = ('image', 'order', 'is_main')
+    ordering = ('order',)
+    readonly_fields = ('is_main',)  # Чтобы не редактировать вручную (см. совет ниже)
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -9,6 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     fields = ('name', 'slug', 'description', 'image', 'is_active')
 
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'old_price', 'in_stock', 'is_featured', 'is_new')
@@ -17,6 +29,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ('created_at', 'updated_at')
+
     fieldsets = (
         ('Основная информация', {
             'fields': ('name', 'slug', 'description', 'category', 'price', 'old_price')
@@ -32,3 +45,11 @@ class ProductAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    # Подключаем inline — чтобы добавлять фото прямо в форме товара
+    inlines = [ProductImageInline]
+
+
+# ⚠️ НЕ нужно регистрировать ProductImage отдельно!
+# admin.site.register(ProductImage) — УДАЛИТЬ
+# @admin.register(ProductImage) — УДАЛИТЬ

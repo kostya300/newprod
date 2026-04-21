@@ -19,12 +19,12 @@
 <section class="weekly-products-grid">
     <!-- Карточки повторяются, позже можно заменить на разные товары -->
     {% for product in featured_products %}
-    <a href="{% url 'product_detail' %}" class="product-card-link">
+    <a href="{% url 'product_detail' slug=product.slug %}" class="product-card-link">
         <div class="weekly-product">
             {% if product.is_new %}<span class="weekly-badge">ТОВАР НЕДЕЛИ</span>{% endif %}
             <img src="{{ product.image.url }}" alt="{{ product.name }}">
             <div class="title">{{ product.name }}</div>
-            <div class="description">{{ product.description|truncatewords:10 }}</div>
+
             <div class="price">от {{ product.price }} ₽</div>
             <button class="action-btn" onclick="event.stopPropagation();">Успей заказать</button>
 

@@ -3,13 +3,16 @@ from sympy.integrals.meijerint_doc import category
 
 from .models import Category, Product
 
+
 def index(request):
-    featured_products = Product.objects.filter(is_featured=True, in_stock=True)[:6]
+    featured_products = Product.objects.filter(is_featured=True,in_stock=True)[:9]
     categories = Category.objects.filter(is_active=True)[:6]
-    return render(request, 'store/index.html',
-                  {
-                      'featured_products': featured_products, 'categories ': categories
-                   })
+
+    context = {
+        'featured_products': featured_products,
+        'categories': categories,
+    }
+    return render(request, 'store/index.html', context)
 
 
 def catalog(request):
@@ -48,11 +51,12 @@ def register_view(request):
     return render(request, 'store/register.html')
 
 
-
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
+    gallery_images = product.images.all()
+    main_image = product.image.url if product.image.url else None
     return render(request, 'store/category/cartoffthings.html',
-                  {'product': product}
+                  {'product': product, 'gallery_images': gallery_images, 'main_image': main_image}
                   )
 
 

@@ -16,11 +16,19 @@
 </div>
 <section class="product-detail">
     <div class="product-images">
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="main-image">
+        <!-- Основное изображение -->
+        <img src="{{ main_image }}" alt="{{ product.name }}" class="main-image" id="main-product-image">
         <div class="thumbnail-gallery">
-            <!-- Здесь можно добавить галерею, если будете хранить несколько фото -->
-            <img src="{{ product.image.url }}" alt="Фото 1" class="thumb active">
-            <!-- Другие миниатюры... -->
+           <!-- Основное изображение тоже как миниатюра -->
+{#            {% if main_image %}#}
+{#                <img src="{{ main_image }}" alt="Основное фото" class="thumb active" data-full="{{ main_image }}">#}
+{#            {% endif %}#}
+
+            <!-- Дополнительные фото из галереи -->
+            {% for img in gallery_images %}
+                <img src="{{ img.image.url }}" alt="{{ product.name }} - фото {{ forloop.counter }}"
+                     class="thumb" data-full="{{ img.image.url }}">
+            {% endfor %}
         </div>
     </div>
 
@@ -78,6 +86,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/cartoffthings.js' %}"></script>
-<script src="{% static 'js/comments.js' %}"></script>
+    <script src="{% static 'js/switchimagesinnotice.js' %}"></script>
+    <script src="{% static 'js/cartoffthings.js' %}"></script>
+    <script src="{% static 'js/comments.js' %}"></script>
 {% endblock %}
