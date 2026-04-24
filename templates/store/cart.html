@@ -21,12 +21,12 @@
                     <div class="cart-item" data-id="{{ item.id }}">
                         <img src="{{ item.image }}" alt="{{ item.name }}" class="item-image">
                         <div class="item-info">
-                            <h3 class="item-name">{{ item.name }}</h3>
+                            <h3 class="item-name">{{ item.product.name }}</h3>
                             <div class="item-controls">
                                 <button class="qty-btn minus">−</button>
                                 <span class="quantity">{{ item.quantity }}</span>
                                 <button class="qty-btn plus">+</button>
-                                <span class="item-price">{{ item.price }} ₽</span>
+                                <span class="item-price">{{ item.total_price }} ₽</span>
                             </div>
                         </div>
                         <button class="remove-btn">×</button>
@@ -79,7 +79,7 @@
             <div class="cart-summary">
                 <div class="total">
                     <strong>Итого:</strong>
-                    <span id="total-amount">78 970 ₽</span>
+                    <span id="total-amount">{{ cart_total|floatformat:0 }} ₽</span>
                 </div>
                 <button class="checkout-btn">Оплатить</button>
             </div>
