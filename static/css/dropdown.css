@@ -1,0 +1,85 @@
+/* static/css/dropdown.css */
+
+/* === КОНТЕЙНЕР — задаёт точку отсчёта === */
+.filter-dropdown-container {
+    position: relative; /* ← КЛЮЧЕВОЕ СЛОВО */
+}
+
+/* === ВЫПАДАЮЩАЯ ПАНЕЛЬ === */
+#header-filter-dropdown {
+    position: absolute;
+    top: 100%; /* От нижнего края контейнера */
+    left: 0;
+    width: 340px;
+    display: none;
+    z-index: 1000;
+    margin-top: 8px;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color, #e0e0e0);
+    padding: 1.5rem;
+}
+
+/* Форма */
+.filter-dropdown-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.filter-dropdown-form label {
+    display: block;
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    margin-bottom: 0.4rem;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    background: var(--input-bg, #fff);
+    color: var(--text-color, #333);
+    font-size: 1em;
+}
+
+/* Кнопки */
+.dropdown-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.apply-btn,
+.close-btn {
+    flex: 1;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.apply-btn {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+}
+
+.close-btn {
+    background: var(--border-color, #eee);
+    color: var(--text-color, #555);
+}
+
+.apply-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+}
+
+/* Скрыть на мобильных */
+@media (max-width: 768px) {
+    .filter-dropdown-container {
+        display: none !important;
+    }
+}

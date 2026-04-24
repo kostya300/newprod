@@ -1,0 +1,282 @@
+/* static/css/filter.css */
+
+
+.has-dropdown:hover .dropdown-panel {
+    display: block;
+}
+
+/* Для тёмной темы */
+.dark-theme .dropdown-panel {
+    background: #1e1e1e;
+    border-color: #444;
+    color: #f0f0f0;
+}
+
+/* Форма */
+.filter-dropdown-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.filter-dropdown-form label {
+    display: block;
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    margin-bottom: 0.4rem;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    background: var(--input-bg, #fff);
+    color: var(--text-color, #333);
+}
+
+/* Кнопки */
+.dropdown-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.apply-btn,
+.close-btn {
+    flex: 1;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.apply-btn {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+}
+
+.close-btn {
+    background: var(--border-color, #eee);
+    color: var(--text-color, #555);
+}
+
+.apply-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+}
+
+/* Адаптивность: скрыть выпадающее меню на мобильных */
+@media (max-width: 768px) {
+    .has-dropdown .dropdown-panel {
+        display: none !important;
+    }
+
+    /* Оставить только ссылку */
+    .has-dropdown > a[href="#"] {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+}
+.filter-page {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.filter-page h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text-color, #333);
+}
+
+.filter-form {
+    background: var(--card-bg, #fff);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.price-sliders {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.slider-group {
+    flex: 1;
+}
+.price-slider {
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+.apply-btn {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    width: 100%;
+}
+
+/* Стили для сетки товаров */
+.products-grid {
+    margin-top: 2rem;
+}
+
+.result-count {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+}
+
+.no-results {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+.filter-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color, #333);
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    background: var(--input-bg, #fff);
+    color: var(--text-color, #333);
+    font-size: 1em;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #6e8efb;
+    box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+}
+
+/* Блок цены */
+.price-range .price-sliders {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.slider-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.slider-group label {
+    font-weight: 500;
+}
+
+.price-slider {
+    width: 100%;
+    margin: 8px 0;
+}
+
+#min-value, #max-value {
+    font-weight: 600;
+    color: #6e8efb;
+    margin-left: 8px;
+}
+
+/* Кнопка */
+.apply-btn {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.apply-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.4);
+}
+
+/* Результаты */
+.result-count {
+    font-size: 1.1em;
+    color: var(--text-color, #555);
+    margin-bottom: 1rem;
+}
+
+.no-results {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    font-size: 1.1em;
+}
+
+.product-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* === Поддержка тем === */
+:root {
+    --card-bg: #fff;
+    --input-bg: #fff;
+    --text-color: #333;
+    --border-color: #e0e0e0;
+}
+
+.dark-theme {
+    --card-bg: #1e1e1e;
+    --input-bg: #2d2d2d;
+    --text-color: #f0f0f0;
+    --border-color: #444;
+}
+
+.dark-theme .filter-form {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .filter-input,
+.dark-theme .filter-select {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .filter-page {
+        padding: 1rem;
+    }
+
+    .price-range .price-sliders {
+        flex-direction: column;
+    }
+
+    .slider-group {
+        min-width: auto;
+    }
+
+    .product-cards {
+        grid-template-columns: 1fr;
+    }
+}

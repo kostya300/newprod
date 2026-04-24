@@ -190,6 +190,9 @@
     .login-footer {
         padding: 20px;
     }
+    .login-header{
+        border-radius: 20px;
+    }
 
     .submit-btn {
         padding: 12px;

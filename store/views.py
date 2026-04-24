@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from sympy.integrals.meijerint_doc import category
-
+from django.http import JsonResponse
 from .models import Category, Product
 
 
@@ -14,6 +14,35 @@ def index(request):
     }
     return render(request, 'store/index.html', context)
 
+# filter page for desktop
+def filter_page(request):
+    categories = Category.objects.all()
+    products = Product.objects.all()
+
+    # Обработка фильтров
+    q = request.GET.get('q')
+    category_slug = request.GET.get('category')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    if q:
+        products = products.filter(name__icontains=q)
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    context = {
+        'products': products,
+        'categories': categories,
+        'current_query': q or '',  # ← ВАЖНО: если None → превратить в пустую строку
+        'current_category': category_slug or '',
+        'current_min_price': min_price or '',
+        'current_max_price': max_price or '',
+    }
+    return render(request, 'store/catalog/filter.html', context)
 
 def catalog(request):
     categories = Category.objects.filter(is_active=True)
@@ -39,16 +68,10 @@ def products(request):
 
 
 
-def profile(request):
-    return render(request, 'store/profile.html')
 
 
-def login_view(request):
-    return render(request, 'store/login.html')
 
 
-def register_view(request):
-    return render(request, 'store/register.html')
 
 
 def product_detail(request, slug):

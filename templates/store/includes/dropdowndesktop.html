@@ -1,0 +1,38 @@
+<!-- templates/store/includes/dropdowndesktop.html -->
+<!-- КОНТЕЙНЕР для позиционирования -->
+<div class="filter-dropdown-container">
+    <!-- ВЫПАДАЮЩАЯ ПАНЕЛЬ -->
+    <div class="dropdown-panel" id="header-filter-dropdown">
+        <h4>Фильтры товаров</h4>
+        <form method="get" action="{% url 'filter_page' %}" class="filter-dropdown-form">
+            <!-- Категория -->
+            <div class="form-group">
+                <label>Категория</label>
+                <select name="category" class="filter-select">
+                    <option value="">Все категории</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.slug }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Цена от -->
+            <div class="form-group">
+                <label>Цена от</label>
+                <input type="number" name="min_price" placeholder="0" min="0" class="filter-input">
+            </div>
+
+            <!-- Цена до -->
+            <div class="form-group">
+                <label>до</label>
+                <input type="number" name="max_price" placeholder="100000" min="0" class="filter-input">
+            </div>
+
+            <!-- Кнопки -->
+            <div class="dropdown-actions">
+                <button type="submit" class="apply-btn">Применить</button>
+                <button type="button" class="close-btn" onclick="closeFilterDropdown()">Закрыть</button>
+            </div>
+        </form>
+    </div>
+</div>

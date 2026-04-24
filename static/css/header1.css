@@ -171,6 +171,33 @@
 .close-search:hover {
     opacity: 1;
 }
+/* === Кнопка фильтрации === */
+.filter-icon-btn {
+   background: none;
+    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    font-size: 1.1em;
+}
+
+.filter-icon-btn:hover {
+    background-color: var(--border-color);
+    transform: translateY(-2px);
+}
+
+/* Скрыть на мобильных */
+@media (max-width: 768px) {
+    .filter-icon-btn {
+        display: none;
+    }
+}
 
 
 
@@ -220,6 +247,18 @@
     }
 }
 
+/* Скрываем mobile-блок на десктопе */
+.desktop-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.mobile-actions {
+    display: none;
+}
+
+
+
 /* === Адаптивность для экранов меньше 480px (мобильные) === */
 @media (max-width: 480px) {
     .search-form {
@@ -248,5 +287,41 @@
     .search-btn {
         padding: 5px 8px;
         font-size: 12px;
+    }
+    .desktop-actions {
+        display: none;
+    }
+
+    .mobile-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cart-icon {
+        background: none;
+        border: none;
+        font-size: 1.4em;
+        cursor: pointer;
+        padding: 6px;
+    }
+
+    .avatar-btn {
+        background: none;
+        border: 1px solid #5829a9;
+        padding: 0;
+        cursor: pointer;
+        border-radius: 50%;
+        overflow: hidden;
+        width: 30px;
+        height: 30px;
+        margin-left: 4px;
+    }
+
+    .mini-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
     }
 }

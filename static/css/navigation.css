@@ -1,0 +1,88 @@
+/* static/css/navigation.css */
+/* Стили для навигации: профиль, адаптивность, темы */
+
+/* Основной стиль для пункта "Профиль" */
+.nav-profile-link > a {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white !important;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
+}
+
+.nav-profile-link > a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(110, 142, 251, 0.4);
+    background: linear-gradient(135deg, #5d7efa, #9a66e0);
+}
+
+.nav-profile-link .link-text {
+    color: white !important;
+}
+
+/* Аватар в меню */
+.nav-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.nav-avatar:hover {
+    transform: scale(1.08);
+}
+
+/* Показывать/скрывать элементы по устройству */
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: inline;
+}
+
+/* === Адаптация под мобильные устройства === */
+
+/* На всех мобильных (<768px): скрываем аватар, оставляем текст */
+@media (max-width: 768px) {
+    /* Показываем иконку вместо аватара */
+    .mobile-only {
+        display: inline;
+    }
+
+    /* Скрываем аватар и стандартную иконку */
+    .desktop-only {
+        display: none;
+    }
+
+    /* Текст "Профиль" остаётся видимым */
+    .nav-profile-link .link-text {
+        display: inline; /* ← важно: не скрываем! */
+        color: white !important;
+    }
+}
+
+/* На очень маленьких экранах (<480px): скрываем текст */
+@media (max-width: 480px) {
+    .nav-profile-link .link-text {
+        display: none;
+    }
+}
+
+/* === Поддержка тёмной и светлой темы === */
+
+.dark-theme .nav-profile-link > a {
+    background: linear-gradient(135deg, #5a7df8, #8a5ce0);
+    box-shadow: 0 4px 10px rgba(90, 125, 248, 0.4);
+}
+
+:root:not(.dark-theme) .nav-profile-link > a {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+}

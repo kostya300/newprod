@@ -15,29 +15,40 @@
         </div>
 
         <form method="post" class="form">
-            {% csrf_token %}
-            <div class="input-group">
-                <label for="username">Имя и фамилия</label>
-                <input type="text" id="username" name="username" placeholder="Введите имя" required>
-            </div>
-            <div class="input-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Введите email" required>
-            </div>
-            <div class="input-group">
-                <label for="phone">Телефон</label>
-                <input type="tel" id="phone" name="phone" placeholder="Введите номер" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" placeholder="Придумайте пароль" required>
-            </div>
-            <div class="input-group">
-                <label for="confirm-password">Подтвердите пароль</label>
-                <input type="password" id="confirm-password" name="confirm_password" placeholder="Повторите пароль" required>
-            </div>
-            <button type="submit" class="submit-btn">Зарегистрироваться</button>
-        </form>
+    {% csrf_token %}
+
+    <div class="input-group">
+        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+        {% if form.username.errors %}<span class="error">{{ form.username.errors }}</span>{% endif %}
+    </div>
+
+    <div class="input-group">
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+        {{ form.email }}
+        {% if form.email.errors %}<span class="error">{{ form.email.errors }}</span>{% endif %}
+    </div>
+
+    <div class="input-group">
+        <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+        {{ form.phone }}
+        {% if form.phone.errors %}<span class="error">{{ form.phone.errors }}</span>{% endif %}
+    </div>
+
+    <div class="input-group">
+        <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+        {{ form.password }}
+        {% if form.password.errors %}<span class="error">{{ form.password.errors }}</span>{% endif %}
+    </div>
+
+    <div class="input-group">
+        <label for="{{ form.confirm_password.id_for_label }}">{{ form.confirm_password.label }}</label>
+        {{ form.confirm_password }}
+        {% if form.confirm_password.errors %}<span class="error">{{ form.confirm_password.errors }}</span>{% endif %}
+    </div>
+
+    <button type="submit" class="submit-btn">Зарегистрироваться</button>
+</form>
 
         <div class="social-login-divider">
             <span>или зарегистрируйтесь через</span>
@@ -59,7 +70,7 @@
         </div>
 
         <div class="login-footer">
-            <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+            <p>Уже есть аккаунт? <a href="{% url 'users:login' %}">Войти</a></p>
         </div>
     </section>
 </main>

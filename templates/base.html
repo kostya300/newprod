@@ -2,6 +2,7 @@
 {% load static %}
 <html lang="ru">
 <head>
+
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{% block title %}ВИКИ — Магазин техники{% endblock %}</title>
@@ -17,10 +18,16 @@
     <!-- Стили -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/header1.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
+<link rel="stylesheet" href="{% static 'css/desktopfilter.css' %}">
     <link rel="stylesheet" href="{% static 'css/product-card.css' %}">
     <link rel="stylesheet" href="{% static 'css/generalcardindex.css' %}">
     <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdownbase.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -31,7 +38,28 @@
     <!-- Боковое меню -->
     <nav class="sidebar" id="sidebar">
         <h2 class="logo">ВИКИ</h2>
+
         <ul class="menu">
+            <!-- templates/base.html -->
+            {% if user.is_authenticated %}
+                <!-- templates/base.html -->
+                <!-- templates/base.html -->
+                <li class="nav-profile-link">
+                    <a href="{% url 'users:profile' %}">
+                        <!-- На мобильных: только иконка -->
+                        <span class="icon mobile-only">👤 Профиль</span>
+
+                        <!-- На десктопе: аватар или иконка -->
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="Аватар" class="nav-avatar desktop-only">
+                        {% else %}
+                            <span class="icon desktop-only">👤</span>
+                        {% endif %}
+
+                        <span class="link-text">Профиль</span>
+                    </a>
+                </li>
+            {% endif %}
             <li class="dropdown">
                 <a href="{% url 'catalog' %}" class="dropdown-link">
                     <span class="icon">📱</span>
@@ -55,12 +83,7 @@
                 </a>
             </li>
 
-            <li>
-                <a href="{% url 'profile' %}">
-                    <span class="icon">👤</span>
-                    <span class="link-text">Профиль</span>
-                </a>
-            </li>
+
             <li>
                 <a href="#">
                     <span class="icon">ℹ️</span>
@@ -68,9 +91,28 @@
                 </a>
             </li>
             <li>
+                <a href="{% url 'favorites' %}">
+                    <span class="icon">❤️</span>
+                    <span class="link-text">Избранное</span>
+                </a>
+            </li>
+        <li>
+                <a href="">
+                    <span class="icon">🔔</span>
+                    <span class="link-text">Уведомления</span>
+                </a>
+            </li>
+        <li>
                 <a href="{% url 'contacts' %}">
                     <span class="icon">📞</span>
                     <span class="link-text">Контакты</span>
+                </a>
+            </li>
+            <!-- Ссылка на страницу фильтрации -->
+            <li>
+                <a href="{% url 'filter_page' %}">
+                    <span class="icon">🔍</span>
+                    <span class="link-text">Фильтр товаров</span>
                 </a>
             </li>
         </ul>
@@ -89,9 +131,7 @@
 </div>
 
 <!-- Глобальные скрипты -->
-<script src="{% static 'js/searchopenandclose.js' %}">
-
-</script>
+<script src="{% static 'js/searchopenandclose.js' %}"></script>
 <script>
     const sidebar = document.getElementById('sidebar');
     const themeToggle = document.getElementById('theme-toggle');
@@ -182,7 +222,7 @@
         }
     });
 </script>
-
+<script src="{% static 'js/filter.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

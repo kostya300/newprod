@@ -30,7 +30,6 @@ env/
 venv/
 
 # === Django ===
-media/
 staticfiles/
 *.log
 local_settings.py

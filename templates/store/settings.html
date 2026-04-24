@@ -1,0 +1,81 @@
+<!-- templates/users/settings.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Настройки профиля — ВИКИ{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="profile-container">
+        <div class="settings-grid">
+            <!-- === Левая колонка: Аватар === -->
+            <section class="avatar-section">
+                <h3>Фото профиля</h3>
+                <div class="avatar-wrapper">
+                    <img
+                        src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/profile/default-avatar.png' %}{% endif %}"
+                        alt="Аватар"
+                        class="profile-avatar"
+                        id="current-avatar"
+                    >
+                    <form method="post" enctype="multipart/form-data" id="avatar-form">
+                        {% csrf_token %}
+                        <input type="file"
+                               name="avatar"
+                               accept="image/*"
+                               id="id_avatar"
+                               class="avatar-input"
+                               onchange="submitAvatarForm()">
+                        <label for="id_avatar" class="edit-avatar">✎</label>
+                    </form>
+                </div>
+                <p class="avatar-description">Загрузите изображение в формате JPG или PNG.</p>
+            </section>
+
+            <!-- === Правая колонка: Основная форма === -->
+            <section class="profile-edit-section">
+                <h2>Основная информация</h2>
+                <form method="post" id="profile-form">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <label>{{ form.first_name.label }}</label>
+                        {{ form.first_name }}
+                    </div>
+            <div class="input-group">
+                <label>{{ form.last_name.label }}</label>
+                {{ form.last_name }}
+            </div>
+            <div class="input-group">
+                <label>{{ form.email.label }}</label>
+                {{ form.email }}
+            </div>
+            <div class="input-group">
+                <label>{{ form.phone.label }}</label>
+                {{ form.phone }}
+            </div>
+            <button type="submit" name="save_profile" class="submit-btn">Сохранить изменения</button>
+        </form>
+    </section>
+</div>
+
+<section class="profile-actions">
+    <button class="action-btn" onclick="window.location='{% url 'users:profile' %}'">Назад в профиль</button>
+</section>
+</main>
+
+<script>
+function submitAvatarForm() {
+    const form = document.getElementById('avatar-form');
+    // Добавляем скрытое поле, чтобы Django понял, что это загрузка аватара
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'upload_avatar';
+    input.value = '1';
+    form.appendChild(input);
+    form.submit();
+}
+</script>
+{% endblock %}

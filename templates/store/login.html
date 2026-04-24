@@ -1,9 +1,11 @@
+<!-- templates/store/login.html -->
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Вход — ВИКИ{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login-errors.css' %}"> <!-- Новый файл -->
 {% endblock %}
 
 {% block content %}
@@ -14,18 +16,47 @@
             <p>Введите свои данные для входа</p>
         </div>
 
+        <!-- Общие ошибки формы -->
+        {% if form.non_field_errors %}
+            <div class="form-error-box">
+                {% for error in form.non_field_errors %}
+                    <p class="form-error-item">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form method="post" class="form">
             {% csrf_token %}
+
+            <!-- Поле: Имя пользователя -->
             <div class="input-group">
-                <label for="username">Email или телефон</label>
-                <input type="text" id="username" name="username" placeholder="Введите email или номер" required>
+                <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="input-error-group">
+                        {% for error in form.username.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
+
+            <!-- Поле: Пароль -->
             <div class="input-group">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="input-error-group">
+                        {% for error in form.password.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
+
             <button type="submit" class="submit-btn">Войти</button>
         </form>
+
         <div class="social-login-divider">
             <span>или войдите через</span>
         </div>
@@ -34,8 +65,7 @@
             <a href="https://vk.com/" target="_blank" class="social-icon" title="Войти через ВКонтакте">
                 <img src="{% static 'images/icons/vk.png' %}" alt="ВКонтакте">
             </a>
-            <a href="https://google.com/" target="_blank" class="social-icon"
-               title="Найти в Google">
+            <a href="https://google.com/" target="_blank" class="social-icon" title="Найти в Google">
                 <img src="{% static 'images/icons/google.png' %}" alt="Google">
             </a>
             <a href="mailto:info@wiki-tech.ru" target="_blank" class="social-icon" title="Написать на Mail">
@@ -48,7 +78,7 @@
 
         <div class="login-footer">
             <a href="#" class="forgot-link">Забыли пароль?</a>
-            <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+            <p>Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></p>
         </div>
     </section>
 </main>

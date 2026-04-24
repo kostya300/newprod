@@ -1,42 +1,49 @@
+<!-- templates/store/profile.html -->
 {% extends "base.html" %}
 {% load static %}
 
 {% block title %}Профиль — ВИКИ{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}
 
 {% block content %}
-<main class="profile-container">
-    <section class="profile-header">
-        <div class="avatar-wrapper">
-            <img src="{% static '/imagesprofile/a1ece2d2bcdb3426150feec9028dffa6.png' %}" alt="Аватар" class="profile-avatar">
-            <button class="edit-avatar">✎</button>
-        </div>
-        <h1 class="profile-name">Алексей Иванов</h1>
-        <p class="profile-email">alex.ivanov@example.com</p>
-    </section>
+    <main class="profile-container">
+        <section class="profile-header">
+            <div class="avatar-wrapper">
+                <!-- Аватар: без переносов в src -->
+                <img
+                    src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/profile/default-avatar.png' %}{% endif %}"
+                    alt="Аватар"
+                    class="profile-avatar"
+                    id="avatar-preview"
+                >
+                <button class="edit-avatar" onclick="window.location='{% url 'users:settings' %}'">✎</button>
+            </div>
+            <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+        </section>
 
-    <section class="profile-stats">
-        <div class="stat-card">
-            <h3>Заказы</h3>
-            <p class="stat-number">14</p>
-        </div>
-        <div class="stat-card">
-            <h3>Баллы</h3>
-            <p class="stat-number">850</p>
-        </div>
-        <div class="stat-card">
-            <h3>Скидка</h3>
-            <p class="stat-number">7%</p>
-        </div>
-    </section>
+        <section class="profile-stats">
+            <div class="stat-card">
+                <h3>Заказы</h3>
+                <p class="stat-number">14</p>
+            </div>
+            <div class="stat-card">
+                <h3>Баллы</h3>
+                <p class="stat-number">{{ user.bonus_points }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Скидка</h3>
+                <p class="stat-number">{{ user.discount }}%</p>
+            </div>
+        </section>
 
-    <section class="profile-actions">
-        <button class="action-btn">История заказов</button>
-        <button class="action-btn">Настройки</button>
-        <button class="action-btn">Выход</button>
-    </section>
-</main>
+        <section class="profile-actions">
+            <button class="action-btn">История заказов</button>
+            <button class="action-btn" onclick="window.location='{% url 'users:settings' %}'">Настройки</button>
+            <button class="action-btn" onclick="window.location='{% url 'users:logout' %}'">Выход</button>
+        </section>
+    </main>
 {% endblock %}

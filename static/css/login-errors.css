@@ -1,0 +1,86 @@
+/* Адаптивные стили для ошибок входа */
+
+/* Общее сообщение об ошибке (например, неверный логин/пароль) */
+.form-error-box {
+    background: #3f3939;
+    border: 1px solid #f99;
+    border-radius: 8px;
+    padding: 8px 40px;
+    margin-bottom: 16px;
+    font-size: 0.9em;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in;
+}
+
+.form-error-item {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-error-item::before {
+    content: "⚠️";
+}
+
+/* Сообщения под полями */
+.input-error-group {
+    margin-top: 6px;
+}
+
+.error-message {
+    font-size: 0.85em;
+    color: #c00;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: slideIn 0.2s ease-out;
+}
+
+.error-message::before {
+    content: "•";
+    color: #c00;
+    font-weight: bold;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; margin-left: -10px; }
+    to { opacity: 1; margin-left: 0; }
+}
+
+/* Адаптация под мобильные */
+@media (max-width: 480px) {
+    .form-error-box {
+        padding: 10px;
+        margin-top: 3px;
+        font-size: 0.85em;
+    }
+
+    .error-message {
+        font-size: 0.8em;
+    }
+
+    .login-form {
+        padding: 20px;
+    }
+}
+
+/* Для слабовидящих — увеличенный контраст при фокусе */
+@media (prefers-contrast: high) {
+    .form-error-box {
+        border: 2px solid #c00;
+        background: #ffe4e4;
+    }
+
+    .error-message {
+        font-weight: bold;
+    }
+}

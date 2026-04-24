@@ -1,0 +1,137 @@
+<!-- templates/catalog/filter.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Фильтр товаров — ВИКИ{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/filter.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="filter-page">
+        <h1>Фильтрация товаров</h1>
+
+        <!-- Форма фильтрации -->
+        <form method="get" id="filter-form" class="filter-form">
+            <!-- Скрытое поле: станет 1, когда пользователь что-то изменит -->
+            <input type="hidden" name="applied" id="filter-applied" value="0">
+
+            <!-- Поиск по названию -->
+            <div class="filter-group">
+                <label for="id_q">Название товара</label>
+                <input type="text"
+                       name="q"
+                       id="id_q"
+                       value="{{ current_query }}"
+                       placeholder="Введите название..."
+                       class="filter-input"
+                       oninput="markAsApplied()">
+            </div>
+
+            <!-- Категория -->
+            <div class="filter-group">
+                <label for="id_category">Категория</label>
+                <select name="category" id="id_category" class="filter-select" onchange="markAsApplied()">
+                    <option value="">Все категории</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if current_category == cat.slug %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Диапазон цен -->
+            <div class="filter-group price-range">
+                <label>Цена</label>
+                <div class="price-sliders">
+                    <div class="slider-group">
+                        <label for="id_min_price">От:</label>
+                        <input type="range"
+                               name="min_price"
+                               id="id_min_price"
+                               min="0"
+                               max="100000"
+                               step="100"
+                               value="{{ current_min_price|default:'0' }}"
+                               class="price-slider"
+                               oninput="markAsApplied(); updateMinValue()">
+                        <span id="min-value">{{ current_min_price|default:'0' }} ₽</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="id_max_price">До:</label>
+                        <input type="range"
+                               name="max_price"
+                               id="id_max_price"
+                               min="0"
+                               max="100000"
+                               step="100"
+                               value="{{ current_max_price|default:'100000' }}"
+                               class="price-slider"
+                               oninput="markAsApplied(); updateMaxValue()">
+                        <span id="max-value">{{ current_max_price|default:'100000' }} ₽</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка -->
+            <button type="submit" class="apply-btn">Применить фильтры</button>
+        </form>
+
+        <!-- Результаты -->
+        <section class="products-grid">
+            {% if products %}
+                <p class="result-count">Найдено: {{ products.count }} товар(ов)</p>
+                <ul class="product-list">
+                    {% for product in products %}
+                        <a href="{% url 'product_detail' slug=product.slug %}" class="product-card-link">
+                            <div class="weekly-product">
+                                {% if product.is_new %}<span class="weekly-badge">ТОВАР НЕДЕЛИ</span>{% endif %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                <div class="title">{{ product.name }}</div>
+
+                                <div class="price">от {{ product.price }} ₽</div>
+                                <button class="action-btn" onclick="event.stopPropagation();">Успей заказать</button>
+
+                            </div>
+                        </a>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-results">По вашему запросу ничего не найдено.</p>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Обновление значений ползунков
+        function updateMinValue() {
+            document.getElementById('min-value').textContent = document.getElementById('id_min_price').value + ' ₽';
+        }
+
+        function updateMaxValue() {
+            document.getElementById('max-value').textContent = document.getElementById('id_max_price').value + ' ₽';
+        }
+
+        // Помечаем, что фильтры применены пользователем
+        function markAsApplied() {
+            document.getElementById('filter-applied').value = '1';
+        }
+
+        // При загрузке страницы проверяем, был ли уже применён фильтр
+        document.addEventListener('DOMContentLoaded', function () {
+            const applied = new URLSearchParams(window.location.search).get('applied');
+            const resultsSection = document.querySelector('.products-grid');
+
+            // Если фильтры не применялись — скрываем результаты
+            if (!applied || applied !== '1') {
+                resultsSection.innerHTML = `
+            <p class="no-results">Установите параметры фильтрации и нажмите «Применить фильтры».</p>
+        `;
+            }
+        });
+    </script>
+{% endblock %}

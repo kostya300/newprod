@@ -5,12 +5,11 @@ from . import views
 urlpatterns = [
     path('', views.index, name='home'),
     path('catalog/', views.catalog, name='catalog'),
-    path('profile/', views.profile, name='profile'),
-    path('login/', views.login_view, name='login'),
-    path("register/", views.register_view, name="register"),
     path('products/', views.products, name='products'),
+    path('filters/', views.filter_page, name='filter_page'),
     path('cart/', views.cart, name='cart'),
     path('product_detail/<slug:slug>/', views.product_detail, name='product_detail'),
     path('contacts/', views.contacts, name='contacts'),
-    path('favorites/',views.my_favorites,name ='favorites')
+    path('favorites/', views.my_favorites, name='favorites'),
+
 ]
