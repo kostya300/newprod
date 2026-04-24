@@ -11,5 +11,8 @@ urlpatterns = [
     path('product_detail/<slug:slug>/', views.product_detail, name='product_detail'),
     path('contacts/', views.contacts, name='contacts'),
     path('favorites/', views.my_favorites, name='favorites'),
+    path('api/ai/chat/', views.ai_chat, name='ai_chat'),
+    path('currency/', views.currency, name='currency'),
+    path('radio/', views.radio, name='radio')
 
 ]

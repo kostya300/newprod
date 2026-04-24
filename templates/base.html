@@ -19,13 +19,15 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/header1.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
-<link rel="stylesheet" href="{% static 'css/desktopfilter.css' %}">
+    <link rel="stylesheet" href="{% static 'css/desktopfilter.css' %}">
     <link rel="stylesheet" href="{% static 'css/product-card.css' %}">
     <link rel="stylesheet" href="{% static 'css/generalcardindex.css' %}">
     <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdownbase.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dropdownbase2.css' %}">
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ai-assistant.css' %}">
 
 
     {% block extra_css %}{% endblock %}
@@ -84,11 +86,16 @@
             </li>
 
 
-            <li>
-                <a href="#">
+            <!-- templates/base.html -->
+            <li class="dropdown2">
+                <a href="#" class="dropdown-toggle">
                     <span class="icon">ℹ️</span>
-                    <span class="link-text">О нас</span>
+                    <span class="link-text">Информация</span>
                 </a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'currency' %}">💱 Курсы валют</a></li>
+                    <li><a href="{% url 'radio' %}">📻 Местное радио</a></li>
+                </ul>
             </li>
             <li>
                 <a href="{% url 'favorites' %}">
@@ -96,13 +103,13 @@
                     <span class="link-text">Избранное</span>
                 </a>
             </li>
-        <li>
+            <li>
                 <a href="">
                     <span class="icon">🔔</span>
                     <span class="link-text">Уведомления</span>
                 </a>
             </li>
-        <li>
+            <li>
                 <a href="{% url 'contacts' %}">
                     <span class="icon">📞</span>
                     <span class="link-text">Контакты</span>
@@ -128,10 +135,26 @@
     <main class="content">
         {% block content %}{% endblock %}
     </main>
+
+
+
+
+    {% include 'store/includes/aiassistent.html' %}
 </div>
 
 <!-- Глобальные скрипты -->
+<script src="{% static 'js/ai-assistant.js' %}"></script>
 <script src="{% static 'js/searchopenandclose.js' %}"></script>
+<!-- Управление выпадающими меню -->
+<script src="{% static 'js/dropdown2.js' %}"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+      id="hljs-light">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+      id="hljs-dark" disabled>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
 <script>
     const sidebar = document.getElementById('sidebar');
     const themeToggle = document.getElementById('theme-toggle');
@@ -223,6 +246,7 @@
     });
 </script>
 <script src="{% static 'js/filter.js' %}"></script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

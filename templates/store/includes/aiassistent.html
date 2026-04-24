@@ -1,0 +1,38 @@
+<!-- AI Ассистент -->
+<div class="ai-assistant">
+    <!-- Кнопка-иконка открытия -->
+    <button class="ai-toggle-btn" id="ai-toggle-btn" title="AI Помощник">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" fill="white"/>
+        </svg>
+    </button>
+
+    <!-- Окно чата -->
+    <div class="ai-chat-window" id="ai-chat-window">
+        <div class="ai-header">
+            <h4>AI Помощник</h4>
+            <div class="header-controls">
+                <!-- Кнопка полного экрана -->
+                <button id="ai-fullscreen-btn" class="icon-btn" title="Полный экран">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M3 3h8v2H5v6H3V3z"/>
+                        <path d="M21 3h-8v2h6v6h2V3z"/>
+                        <path d="M21 21h-8v-2h6v-6h2v8z"/>
+                        <path d="M3 21h8v-2H5v-6H3v8z"/>
+                    </svg>
+                </button>
+                <!-- Кнопка закрытия -->
+                <button id="ai-close-btn" class="icon-btn">×</button>
+            </div>
+        </div>
+
+        <div class="ai-messages" id="ai-messages">
+            <p><strong>🤖AI:</strong> Привет! Я помогу вам с выбором товара. Задайте вопрос.</p>
+        </div>
+
+        <div class="ai-input-area">
+            <input type="text" id="ai-input" placeholder="Напишите сообщение..."/>
+            <button id="ai-send-btn">➤</button>
+        </div>
+    </div>
+</div>

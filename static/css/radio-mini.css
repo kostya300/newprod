@@ -1,0 +1,102 @@
+.radio-mini-player {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    height: 70px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid #eee;
+    z-index: 1000;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.radio-mini-player.hidden {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #6e8efb;
+    box-shadow: 0 4px 15px rgba(110, 142, 251, 0.4);
+}
+
+/* Контент (виден только в развёрнутом виде) */
+.mini-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 12px;
+    gap: 10px;
+}
+
+.radio-mini-player.hidden .mini-content {
+    display: none;
+}
+
+#mini-cover {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.info {
+    flex: 1;
+    overflow: hidden;
+}
+
+#mini-name {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#mini-status {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    font-size: 1.1em;
+}
+
+.controls i {
+    cursor: pointer;
+    color: #6e8efb;
+    transition: color 0.2s;
+}
+
+.controls i:hover {
+    color: #5a7df7;
+}
+
+/* Тёмная тема */
+.dark-theme .radio-mini-player {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #f0f0f0;
+}
+
+.dark-theme .controls i {
+    color: #5a7df7;
+}
+
+.dark-theme .controls i:hover {
+    color: #6e8efb;
+}
+
+.dark-theme #mini-name {
+    color: #f0f0f0;
+}
+
+.dark-theme #mini-status {
+    color: #aaa;
+}

@@ -8,12 +8,12 @@
 /* === ВЫПАДАЮЩАЯ ПАНЕЛЬ === */
 #header-filter-dropdown {
     position: absolute;
-    top: 100%; /* От нижнего края контейнера */
-    left: 0;
+    top: 100%;
+    left: -129px;
     width: 340px;
     display: none;
     z-index: 1000;
-    margin-top: 8px;
+    margin-top: 23px;
     background: var(--card-bg, #fff);
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);

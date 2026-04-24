@@ -1,0 +1,319 @@
+/* static/css/ai-assistant.css */
+
+/* === Контейнер помощника === */
+.ai-assistant {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+/* === Кнопка-иконка (SVG) === */
+.ai-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.ai-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(110, 142, 251, 0.3);
+}
+
+/* Иконка внутри кнопки */
+.ai-toggle-btn svg {
+    width: 32px;
+    height: 32px;
+    fill: white;
+    transition: transform 0.3s ease;
+}
+
+.ai-toggle-btn:hover svg {
+    transform: rotate(10deg);
+}
+
+/* === Окно чата === */
+.ai-chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 340px;
+    height: 400px;
+    background: var(--bg-primary, #fff);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+}
+
+.ai-chat-window.show {
+    display: flex;
+}
+
+/* === Заголовок === */
+.ai-header {
+    padding: 12px 16px;
+    background: var(--accent-color, #6e8efb);
+    color: var(--text-on-accent, #fff);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1em;
+}
+
+.ai-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+#ai-close-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.4em;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+#ai-close-btn:hover {
+    opacity: 1;
+}
+
+/* === Сообщения — гарантируем правильный цвет текста === */
+.ai-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    font-size: 0.95em;
+    line-height: 1.5;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* Убедимся, что ВСЕ параграфы используют нужный цвет */
+.ai-messages p {
+    margin: 8px 0;
+    word-wrap: break-word;
+    color: var(--text-primary) !important; /* 🔥 Сила через !important */
+    opacity: 1 !important;
+}
+
+/* Дополнительно: если используются <span> или другие теги */
+.ai-messages p strong {
+    color: var(--text-primary) !important;
+}
+
+/* === Поле ввода === */
+.ai-input-area {
+    display: flex;
+    padding: 10px;
+    background: var(--bg-primary, #fff);
+    border-top: 1px solid var(--border-color, #eee);
+}
+.ai-messages pre {
+    margin: 12px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+}
+.ai-messages code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    line-height: 1.5;
+    display: block;
+    padding: 16px;
+    background: var(--bg-code, #f5f5f5);
+    color: var(--text-code, #333);
+    max-height: 400px;
+    overflow-y: auto;
+}
+/* === Структурированный вывод сообщений === */
+
+.ai-msg-heading {
+    font-weight: 600;
+    margin: 16px 0 8px 0;
+    color: var(--text-primary);
+    font-size: 1.1em;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 4px;
+}
+
+.ai-msg-list {
+    margin: 8px 0;
+    padding-left: 20px;
+    color: var(--text-primary);
+}
+
+.ai-msg-list li {
+    margin: 4px 0;
+    line-height: 1.5;
+}
+
+.ai-msg-list li strong {
+    color: #6e8efb; /* Выделяем английские фразы */
+}
+/* Темная тема */
+.theme-dark .ai-messages code {
+    background: #1e1e1e;
+    color: #dcdcdc;
+}
+
+.theme-dark .ai-messages pre {
+    border-color: #444;
+}
+#ai-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    outline: none;
+    background: var(--input-bg, #fff);
+    color: var(--text-primary, #333);
+    font-size: 0.95em;
+}
+
+#ai-input:focus {
+    border-color: var(--accent-color, #6e8efb);
+}
+
+#ai-send-btn {
+    margin-left: -1px;
+    width: 56px;
+    height: 41px;
+    background: var(--accent-color, #6e8efb);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#ai-send-btn:hover {
+    background: #5d7efa;
+}
+
+#ai-send-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: white;
+}
+
+
+/* === Полный экран === */
+.ai-chat-window.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    bottom: auto !important;
+    right: auto !important;
+    border-radius: 0;
+    z-index: 9998;
+}
+
+#ai-fullscreen-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-right: 8px;
+    opacity: 0.9;
+}
+
+#ai-fullscreen-btn:hover {
+    opacity: 1;
+}
+/* === Группа кнопок в заголовке === */
+.header-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+
+/* === Адаптивность: мобильные устройства === */
+@media (max-width: 768px) {
+    .ai-assistant {
+        bottom: 16px;
+        right: 16px;
+    }
+
+    .ai-toggle-btn {
+        width: 56px;
+        height: 56px;
+    }
+
+    .ai-toggle-btn svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .ai-chat-window {
+        width: calc(75vw - 32px);
+        height: 50vh;
+        bottom: -12px;
+        /* left: 16px; */
+        right: 53px;
+        max-width: 400px;
+    }
+}
+
+/* === Поддержка тёмной темы === */
+.theme-dark .ai-chat-window,
+.theme-dark .ai-input-area,
+.theme-dark #ai-input {
+    background: #1e1e1e;
+    color: #f0f0f0;
+}
+
+.theme-dark .ai-messages {
+    background: #2a2a2a;
+    color: #f0f0f0;
+}
+
+.theme-dark #ai-input {
+    border-color: #444;
+    color: #f0f0f0;
+}
+
+.theme-dark #ai-input:focus {
+    border-color: #a777e3;
+}
+
+.theme-dark .ai-header {
+    background: #5829a9;
+}

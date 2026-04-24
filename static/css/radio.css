@@ -1,0 +1,283 @@
+.radio-page {
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    background: var(--bg-primary, #f5f5f5);
+    color: var(--text-primary, #333);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.player-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--bg-secondary, #fff);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.player-header {
+    text-align: center;
+    padding: 16px;
+    background: var(--bg-tertiary, #f0f0f0);
+    color: var(--text-primary, #333);
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.album-art img {
+    width: 100%;
+    max-width: 200px;
+    margin: 20px auto;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.track-title {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    margin-bottom: 8px;
+}
+
+.track-title::after {
+    content: " ●";
+    color: var(--accent-color, #6e8efb);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Управление воспроизведением */
+.player-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+    color: var(--accent-color, #6e8efb);
+}
+
+.player-controls .fas {
+    font-size: 1.6em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.player-controls .fas:hover {
+    transform: scale(1.1);
+    color: var(--accent-hover, #5a7df7);
+}
+
+#play-pause-btn {
+    font-size: 3em !important;
+}
+
+#stop-btn {
+    font-size: 2.2em !important;
+}
+
+/* Громкость */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+    margin: 10px 0;
+}
+
+#volume-slider {
+    flex: 1;
+    height: 5px;
+    -webkit-appearance: none;
+    background: #ddd; /* Фон (неактивная часть) */
+    border-radius: 3px;
+    outline: none;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Заполненная часть (прогресс) */
+#volume-slider::-webkit-slider-runnable-track {
+    height: 5px;
+    -webkit-appearance: none;
+    background: #ddd;
+    border-radius: 3px;
+}
+
+
+
+/* Динамический фон — заполненная часть */
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color, #6e8efb);
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -5.5px;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: background 0.2s ease;
+}
+/* Для Firefox */
+#volume-slider::-moz-range-progress {
+    height: 5px;
+    background: var(--accent-color, #6e8efb);
+    border-radius: 3px;
+}
+
+#volume-slider::-moz-range-track {
+    background: #ddd;
+    height: 5px;
+    border-radius: 3px;
+}
+
+
+#mute-btn {
+    color: #666;
+    cursor: pointer;
+    font-size: 1.3em;
+    transition: color 0.2s ease;
+}
+
+#mute-btn.muted {
+    color: #e74c3c;
+}
+
+/* Прогресс */
+.player-footer {
+    padding: 0 20px 15px;
+}
+
+.time-tracker {
+    display: flex;
+    align-items: center;
+}
+
+.timer-bg {
+    flex: 1;
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.timer-progress {
+    width: 0%;
+    height: 100%;
+    background: var(--accent-color, #6e8efb);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.time {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: #888;
+}
+
+/* Вертикальный список станций */
+.stations-list {
+    padding: 20px;
+    border-top: 1px solid var(--border-color, #eee);
+    background: var(--bg-tertiary, #f9f9f9);
+}
+
+.stations-list h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1em;
+    color: var(--text-secondary, #555);
+    text-align: center;
+}
+
+#stations-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#stations-menu li {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: var(--bg-primary, #fff);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #eee;
+}
+
+#stations-menu li:hover {
+
+    color: white;
+    transform: translateY(-1px);
+}
+
+#stations-menu li.active {
+
+    color: white;
+    border-color: var(--accent-color, #6e8efb);
+}
+
+#stations-menu li img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+    border: 2px solid var(--accent-color, #6e8efb);
+}
+
+#stations-menu li span {
+    font-size: 0.95em;
+    color: var(--text-primary, #333);
+    font-weight: 500;
+}
+
+/* Тёмная тема */
+.dark-theme .player-container,
+.dark-theme .stations-list {
+    background: #1e1e1e;
+    color: #f0f0f0;
+}
+
+.dark-theme .player-header,
+.dark-theme .stations-list h3 {
+    background: #2d2d2d;
+    color: #f0f0f0;
+}
+
+.dark-theme .timer-bg {
+    background: #333;
+}
+
+.dark-theme .volume-control #volume-slider {
+    background: #444;
+}
+
+.dark-theme .volume-control #volume-slider::-webkit-slider-thumb {
+    background: #5a7df7;
+}
+
+.dark-theme #stations-menu li {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #f0f0f0;
+}
+
+.dark-theme #stations-menu li:hover,
+.dark-theme #stations-menu li.active {
+
+    color: white;
+    border-color: #5a7df7;
+}

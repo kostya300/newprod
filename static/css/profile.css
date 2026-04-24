@@ -129,6 +129,92 @@
     transform: translateY(-1px);
 }
 
+
+/* === Блок погоды === */
+.weather-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.weather-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.weather-icon {
+    font-size: 36px;
+}
+.weather-icon-img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.weather-info {
+    line-height: 1.4;
+}
+
+.weather-temp {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.weather-location {
+    font-size: 14px;
+    color: var(--text-primary);
+    opacity: 0.7;
+}
+/* === Индикатор загрузки === */
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--accent-color, #6e8efb);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: none;
+    margin-left: auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Показываем loader при загрузке */
+.weather-card.loading .loader {
+    display: block;
+}
+
+.weather-card:not(.loading) .loader {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .weather-card {
+        flex-direction: row;
+        justify-content: center;
+        text-align: center;
+        padding: 14px 16px;
+    }
+
+    .weather-info {
+        font-size: 14px;
+    }
+
+    .weather-temp {
+        font-size: 20px;
+    }
+}
 /* Адаптивность */
 @media (max-width: 768px) {
     .profile-stats {

@@ -1,0 +1,148 @@
+.currency-page {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#currency-rates {
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.currency-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95em;
+}
+
+.currency-item .code {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+.currency-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Сетка: 4 карточки в строку */
+.currency-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Ровно 4 колонки */
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.currency-card {
+    background: var(--bg-primary, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.currency-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.currency-code {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--accent-color, #6e8efb);
+    margin: 8px 0;
+}
+
+.currency-rate {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--text-primary, #333);
+}
+
+/* Мини-график под курсом */
+.mini-chart {
+    margin-top: 12px;
+    height: 60px; /* маленький график */
+    position: relative;
+}
+
+/* === Информационная карточка === */
+.info-card-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.info-card {
+    width: 90%;
+    max-width: 1200px;
+    background: var(--bg-primary, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    transition: transform 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+}
+
+.info-card-image {
+    flex: 1;
+    min-width: 200px;
+}
+
+.info-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info-card-content {
+    flex: 2;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-card-content h3 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary, #333);
+    font-size: 1.3em;
+}
+
+.info-card-content p {
+    margin: 0 0 12px 0;
+    line-height: 1.6;
+    color: var(--text-primary, #333);
+    opacity: 0.9;
+}
+
+.info-source {
+    font-style: italic;
+    color: #666;
+    margin-top: auto;
+}
+/* Адаптивность: на мобильных — изображение сверху */
+@media (max-width: 768px) {
+    .info-card {
+        flex-direction: column;
+    }
+
+    .info-card-image img {
+        height: 200px;
+    }
+
+    .info-card-content {
+        padding: 16px;
+    }
+}

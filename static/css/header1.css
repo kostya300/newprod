@@ -1,4 +1,26 @@
 /* === Header: гибкая строка === */
+/* === Поддержка тем === */
+:root {
+    --bg-primary: #f8f9ff;
+    --bg-secondary: #f9f9ff;
+    --text-primary: #333;
+    --border-color: #d0d0e0;
+    --btn-hover-bg: #f0f0ff;
+    --accent-color: #5829a9;
+    --text-on-accent: #fff;
+    --input-bg: #fff;
+}
+
+.dark-theme {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #2a2a2a;
+    --text-primary: #f0f0f0;
+    --border-color: #444;
+    --accent-color: #a777e3;
+    --text-on-accent: #fff;
+    --input-bg: #252525;
+}
+
 .header-left,
 .header-right {
     display: flex;

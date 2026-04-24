@@ -1,0 +1,137 @@
+<!-- templates/info/radio.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Местное радио{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/radio.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="radio-page">
+        <div class="player-container">
+            <!-- Заголовок -->
+            <header class="player-header">
+                <h2></h2>
+            </header>
+
+            <!-- Обложка -->
+            <div class="album-art">
+                <img id="station-cover" src="{% static 'images/radio/default.png' %}" alt="Радио">
+            </div>
+
+            <!-- Название станции -->
+            <div class="track-title" id="station-name">Выберите станцию</div>
+            <div class="station-grid">
+            {% for key, station in stations.items %}
+                <button class="station-btn" data-key="{{ key }}">
+                    <img src="{{ station.cover }}" alt="">
+                    <span>{{ station.name }}</span>
+                </button>
+            {% endfor %}
+        </div>
+            <!-- Основные кнопки управления -->
+            <div class="player-controls">
+                <i class="fas fa-step-backward" id="prev-station-btn" title="Предыдущая станция"></i>
+                <i class="fas fa-play-circle" id="play-pause-btn" disabled title="Воспроизвести"></i>
+                <i class="fas fa-stop-circle" id="stop-btn" title="Стоп"></i>
+                <i class="fas fa-step-forward" id="next-station-btn" title="Следующая станция"></i>
+            </div>
+
+            <!-- Громкость -->
+            <div class="volume-control">
+                <i class="fas fa-volume-mute" id="mute-btn" title="Отключить звук"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.7">
+            </div>
+
+            <!-- Прогресс (индикатор активности) -->
+            <footer class="player-footer">
+                <div class="time-tracker">
+                    <div class="timer-bg" id="timer-bg">
+                        <div class="timer-progress" id="timer-progress"></div>
+                    </div>
+                    <div class="time" id="status">Оффлайн</div>
+                </div>
+            </footer>
+
+            <!-- Скрытый аудио -->
+            <audio id="radio-audio"></audio>
+
+            <!-- Вертикальный список станций -->
+            <div class="stations-list">
+
+                <ul id="stations-menu">
+
+                    <li data-key="europa">
+                        <img src="{% static 'images/radio/europa.png' %}" alt="Европа Плюс">
+                        <span>Европа Плюс</span>
+                    </li>
+
+                    <li data-key="nashe">
+                        <img src="{% static 'images/radio/nashe.png' %}" alt="Наше Радио">
+                        <span>Наше Радио</span>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+<!-- templates/info/radio.html -->
+
+{% block extra_js %}
+    <script>
+        // Запуск станции из любого места
+        document.querySelectorAll('.station-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.key;
+                const station = window.radioStations[key];
+
+                // Отправляем событие или напрямую работаем с глобальным плеером
+                const audio = document.getElementById('global-radio-audio');
+                audio.src = station.stream;
+                document.getElementById('mini-cover').src = station.cover;
+                document.getElementById('mini-name').textContent = station.name;
+                document.getElementById('mini-status').textContent = 'Загрузка...';
+
+                audio.play().then(() => {
+                    document.getElementById('mini-play-pause').className = 'fas fa-pause';
+                    document.getElementById('mini-status').textContent = 'В эфире...';
+                    document.getElementById('radio-mini-player').classList.remove('hidden');
+
+                    // Сохраняем
+                    localStorage.setItem('radioState', JSON.stringify({
+                        key,
+                        isPlaying: true
+                    }));
+                }).catch(err => {
+                    alert('Разрешите автовоспроизведение');
+                });
+            });
+        });
+    </script>
+    <script>
+        // Генерируем правильные URL через Django
+        window.radioStations = {
+            europa: {
+                name: 'Европа Плюс',
+                stream: 'https://ep128.streamr.ru/',
+                cover: '{% static "images/radio/europa.png" %}'
+            },
+
+            nashe: {
+                name: 'Наше Радио',
+                stream: 'https://nashe1.hostingradio.ru/nashe-128.mp3',
+                cover: '{% static "images/radio/nashe.png" %}'
+            },
+
+        };
+    </script>
+
+    <!-- Теперь подключаем JS-файл -->
+    <script src="{% static 'js/radio.js' %}"></script>
+
+{% endblock %}

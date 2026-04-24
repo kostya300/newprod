@@ -1,0 +1,77 @@
+<!-- templates/info/currency.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Курсы валют{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/valuta.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="currency-page">
+        <h2>💱 Курсы валют (ЦБ РФ)</h2>
+        <div class="currency-grid" id="currency-grid">
+            <p>Загрузка...</p>
+        </div>
+       <!-- Информационная карточка -->
+        <div class="info-card-container">
+            <div class="info-card">
+                <div class="info-card-image">
+                    <img src="{% static 'images/radio/foto1.png' %}" alt="Рынок труда">
+                </div>
+                <div class="info-card-content">
+                    <h3>📈 <a href="" style="text-decoration: none;">Рынок труда: IT-сектор растёт</a></h3>
+                    <p>
+                        За последний месяц количество вакансий в сфере IT выросло на <strong>90%</strong>.
+                        Особенно востребованы Python-разработчики, DevOps и ML-инженеры.
+                        Рекомендуем рассмотреть обучение или переобучение в этих направлениях.
+                    </p>
+                    <p class="info-source">
+                        <small>Источник: Росстат, 2025 г.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    <div class="info-card-container">
+            <div class="info-card">
+                <div class="info-card-image">
+                    <img src="{% static 'images/radio/foto1.png' %}" alt="Рынок труда">
+                </div>
+                <div class="info-card-content">
+                    <h3>📈 <a href="" style="text-decoration: none;">Рынок труда: IT-сектор растёт</a></h3>
+                    <p>
+                        За последний месяц количество вакансий в сфере IT выросло на <strong>90%</strong>.
+                        Особенно востребованы Python-разработчики, DevOps и ML-инженеры.
+                        Рекомендуем рассмотреть обучение или переобучение в этих направлениях.
+                    </p>
+                    <p class="info-source">
+                        <small>Источник: Росстат, 2025 г.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    <div class="info-card-container">
+            <div class="info-card">
+                <div class="info-card-image">
+                    <img src="{% static 'images/radio/foto1.png' %}" alt="Рынок труда">
+                </div>
+                <div class="info-card-content">
+                    <h3>📈 <a href="https://www.rbc.ru/life/news/695241d59a79474610e80e31" style="text-decoration: none;">Как изменятся зарплаты айтишников в 2026 году</a></h3>
+                    <p>
+                        РБК Life выяснил, каким специалистам стоит ждать максимальную индексацию
+                    </p>
+                    <p class="info-source">
+                        <small>Источник: Росстат, 2025 г.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block extra_js %}
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/valuta.js' %}"></script>
+{% endblock %}

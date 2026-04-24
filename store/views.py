@@ -1,9 +1,14 @@
+import requests
 from django.shortcuts import render, get_object_or_404
 from sympy.integrals.meijerint_doc import category
 from django.http import JsonResponse
 from .models import Category, Product
-
-
+import base64
+import time
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import json
+from .utils import get_gigachat_token
 def index(request):
     featured_products = Product.objects.filter(is_featured=True,in_stock=True)[:9]
     categories = Category.objects.filter(is_active=True)[:6]
@@ -68,7 +73,56 @@ def products(request):
 
 
 
+GIGACHAT_TOKEN = "eyJjdHkiOiJqd3QiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0.RLOoO2lvKCrRUFMRTK3AzOADyKM1xHmT0HPqQZ6LWmHIeey2KK8yPyLMNk2IYcr9wx4g1N1dWT-pKVNuBpJ0aRxNJr6F63Q5A21Wz06pwxnEv2F3O4_mjeNfN0ZDXjdX9rL1S8FHZAqD1_frIKyyB26p2BDDego6VADoNWdxIquoVZ1ncss9edkDl9AFxpVrEfcRuOdTp4pW9xUwW4f0vWI1UsASp8KRFJKIuBqqzgHGvnyzXWqJWvt0W9ANHtA_vZ2sTJe7kEKkfEeYW1Tjgp8C0y9freaTEI4UdsFFz_QH3am9ThAW4NMtfpleZW3IodMS4-TUP5SbdGPzEMMUYw.K6b-4aYjkY6zf7jmWtd__g.M-4SWEYdTdAglvDcH2xOCKvE5SRyCA7EBUu35bFpzh-VnArn2Rk5OKRqZeGeLEKiClRrgPAMK-bHbAKo1CmWu9nwRqmCGY--jRHfuzx9sv8ScIc8Kb7F1kpsba_LvfRM9R7088IaxBEcCYGqIZ00R1D0jTfvE0zS5gqjxr1FSy6v27HQNdZT1nLloFpxT_xoyanKi6TQ9TMrL7TCwvkrqw7SFdPsrDORHbiF66Z7kzeI1FJ0NnFAWnblZSNE3Ll8GBNhsuVqiFQntIgEAkawSvpz1juy6M9qkQnhnB8N-hMjPxs6GPpcSyuctbZOKiHN77Pisvi39twXanz25XR9FwNF3DzSPGanzJW9_w2obeA100OAnIjiLGlZbRx_oAZQcBSIygDnAMXMXEiM4ZdkbbLkaZuVMXAtONSrg_pC7869g0ew1De8N__bBeU9xm3RjGEv7MMNT25Rkpzu6M9aA8HxDmw0XOB4CY9dNzW7MMCO4VJCk1vheHhll_Oo3EWInkzMVlyYRM133cOXk0rlQKGjJjA9wsF_QuTnrtEbioLWHfzKaQMM3YAm3FwA-eIBbTfmBWM2-0-6RaKDpnO4KICYmCs0ZWPy2BkLeoYpqm0H_9BMYAtn_Uak7Qukc-hW6OHfgGagh-g-f4fvADiaAXtMCNTTyhPpdwSeISKd9fLcwb0EOkxUgy7QKkuhhjWMLpxle0yLpm5sIYEVBcN5ON8tylVWrXfU3HKN5OCmvQE.btIpUx-8BcdCigEi_N3wxlphzp-Dt2CtnMnnNSqHVjs"
 
+@csrf_exempt
+def ai_chat(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '').strip()
+            if not user_message:
+                return JsonResponse({'response': 'Введите сообщение.'})
+
+            # Получаем токен (с кэшированием!)
+            token = get_gigachat_token()
+            if not token:
+                return JsonResponse({'response': 'Сервис временно недоступен. Ошибка авторизации.'})
+
+            headers = {
+                "Authorization": f"Bearer {token}",  # ✅ Не GIGACHAT_TOKEN, а token!
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "model": "GigaChat",
+                "messages": [
+                    {"role": "user", "content": user_message}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 512
+            }
+
+            response = requests.post(
+                "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                verify=False  # ⚠️ Только для разработки!
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                bot_reply = result['choices'][0]['message']['content'].strip()
+                return JsonResponse({'response': bot_reply})
+            else:
+                print("GigaChat error:", response.status_code, response.text)
+                return JsonResponse({'response': 'Не удалось получить ответ от AI.'})
+
+        except Exception as e:
+            print("Exception:", str(e))
+            return JsonResponse({'response': 'Ошибка обработки запроса.'})
+
+    return JsonResponse({'error': 'Only POST'}, status=400)
 
 
 
@@ -87,7 +141,10 @@ def my_favorites(request):
     # Здесь логика для страницы "Избранное"
     return render(request, 'store/category/myfavorite.html')
 
-
+def radio(request):
+    return render(request,'info/radio.html')
+def currency(request):
+    return render(request,'info/currency.html')
 def cart(request):
     # Пример данных для корзины (в реальности — из сессии или БД)
     cart_items = [
