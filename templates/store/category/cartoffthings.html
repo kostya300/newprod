@@ -3,90 +3,107 @@
 {% block title %}{{ product.name }} — ВИКИ{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/cartoffthings.css' %}">
-<link rel="stylesheet" href="{% static 'css/comments.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cartoffthings.css' %}">
+    <link rel="stylesheet" href="{% static 'css/comments.css' %}">
 {% endblock %}
 
 {% block content %}
-{% include "store/includes/header.html" %}
-<!-- Модальное окно поиска (скрыто по умолчанию) -->
-<div class="search-modal" id="search-modal">
-    <button class="close-search" id="close-search">&times;</button>
-    {% include "store/includes/search-form.html" %}
-</div>
-<section class="product-detail">
-    <div class="product-images">
-        <!-- Основное изображение -->
-        <img src="{{ main_image }}" alt="{{ product.name }}" class="main-image" id="main-product-image">
-        <div class="thumbnail-gallery">
-           <!-- Основное изображение тоже как миниатюра -->
-{#            {% if main_image %}#}
-{#                <img src="{{ main_image }}" alt="Основное фото" class="thumb active" data-full="{{ main_image }}">#}
-{#            {% endif %}#}
-
-            <!-- Дополнительные фото из галереи -->
-            {% for img in gallery_images %}
-                <img src="{{ img.image.url }}" alt="{{ product.name }} - фото {{ forloop.counter }}"
-                     class="thumb" data-full="{{ img.image.url }}">
-            {% endfor %}
-        </div>
+    {% include "store/includes/header.html" %}
+    <!-- Модальное окно поиска (скрыто по умолчанию) -->
+    <div class="search-modal" id="search-modal">
+        <button class="close-search" id="close-search">&times;</button>
+        {% include "store/includes/search-form.html" %}
     </div>
+    <section class="product-detail">
+        <div class="product-images">
+            <!-- Основное изображение -->
+            <img src="{{ main_image }}" alt="{{ product.name }}" class="main-image" id="main-product-image">
+            <div class="thumbnail-gallery">
+                <!-- Основное изображение тоже как миниатюра -->
+                {#            {% if main_image %}#}
+                {#                <img src="{{ main_image }}" alt="Основное фото" class="thumb active" data-full="{{ main_image }}">#}
+                {#            {% endif %}#}
 
-    <div class="product-info">
-        <h1 class="product-title">{{  product.name }}</h1>
-        <div class="product-rating">
-            <div class="stars">
-                ★★★★☆
+                <!-- Дополнительные фото из галереи -->
+                {% for img in gallery_images %}
+                    <img src="{{ img.image.url }}" alt="{{ product.name }} - фото {{ forloop.counter }}"
+                         class="thumb" data-full="{{ img.image.url }}">
+                {% endfor %}
             </div>
-            <span class="reviews">(47 отзывов)</span>
         </div>
 
-        <p class="product-price">{{ product.price }} ₽</p>
-        {% if product.old_price %}
-            <p class="product-old-price">Старая цена: <span>{{ product.old_price }} ₽</span></p>
-        {% endif %}
-
-        <div class="product-features">
-            <ul>
-                <li>📱 8 ГБ ОЗУ, 256 ГБ ПЗУ</li>
-                <li>📷 Камера 200 МП</li>
-                <li>🔋 Аккумулятор 5000 мА·ч</li>
-                <li>⚡ Зарядка 120 Вт</li>
-                <li>🌐 5G, NFC, Bluetooth 5.3</li>
-            </ul>
-        </div>
-
-        <div class="product-actions">
-            <div class="quantity-control">
-                <button class="qty-btn minus">−</button>
-                <span class="quantity">1</span>
-                <button class="qty-btn plus">+</button>
+        <div class="product-info">
+            <h1 class="product-title">{{ product.name }}</h1>
+            <div class="product-rating">
+                <div class="stars">
+                    ★★★★☆
+                </div>
+                <span class="reviews">(47 отзывов)</span>
             </div>
-            <button class="add-to-cart-btn" data-id="{{ product.id }}">
-                <span>➕</span> В корзину
-            </button>
-            <button class="like-btn" title="Добавить в избранное">
-                ❤️
-            </button>
-        </div>
 
-        <div class="delivery-info">
-            <p>🚚 Бесплатная доставка — завтра</p>
-            <p>📍 Самовывоз — сегодня</p>
-        </div>
-    </div>
-</section>
+            <p class="product-price">{{ product.price }} ₽</p>
+            {% if product.old_price %}
+                <p class="product-old-price">Старая цена: <span>{{ product.old_price }} ₽</span></p>
+            {% endif %}
 
-<section class="product-description">
-    <h2>Описание товара</h2>
-    <p>{{ product.description|linebreaks }}</p>
-</section>
-<!-- Подключаем отзывы -->
-{% include "store/comments.html" %}
+            <div class="product-features">
+                <ul>
+                    <li>📱 8 ГБ ОЗУ, 256 ГБ ПЗУ</li>
+                    <li>📷 Камера 200 МП</li>
+                    <li>🔋 Аккумулятор 5000 мА·ч</li>
+                    <li>⚡ Зарядка 120 Вт</li>
+                    <li>🌐 5G, NFC, Bluetooth 5.3</li>
+                </ul>
+            </div>
+
+            <div class="product-actions">
+                <div class="quantity-control">
+                    <!-- Кнопки изменения количества -->
+                    <button type="button" class="qty-btn minus" onclick="changeQuantity(-1)">−</button>
+                    <span class="quantity" id="current-quantity">1</span>
+                    <button type="button" class="qty-btn plus" onclick="changeQuantity(1)">+</button>
+                </div>
+
+                <!-- Форма добавления в корзину -->
+                <form method="post" action="{% url 'basket_add' product.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <!-- Скрытое поле с количеством -->
+                    <input type="hidden" name="quantity" id="quantity-input" value="1">
+                    <button type="submit" class="add-to-cart-btn">
+                        <span>➕</span>В корзину
+                    </button>
+                </form>
+
+                <button class="like-btn" title="Добавить в избранное">❤️</button>
+            </div>
+
+            <div class="delivery-info">
+                <p>🚚 Бесплатная доставка — завтра</p>
+                <p>📍 Самовывоз — сегодня</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-description">
+        <h2>Описание товара</h2>
+        <p>{{ product.description|linebreaks }}</p>
+    </section>
+    <!-- Подключаем отзывы -->
+    {% include "store/comments.html" %}
 {% endblock %}
 
 {% block extra_js %}
+    <!-- JavaScript для управления количеством -->
+    <script>
+        function changeQuantity(delta) {
+            const qtyElement = document.getElementById('current-quantity');
+            const input = document.getElementById('quantity-input');
+            let qty = parseInt(qtyElement.textContent);
+            qty = Math.max(1, qty + delta);  // минимум 1
+            qtyElement.textContent = qty;
+            input.value = qty;
+        }
+    </script>
     <script src="{% static 'js/switchimagesinnotice.js' %}"></script>
-    <script src="{% static 'js/cartoffthings.js' %}"></script>
     <script src="{% static 'js/comments.js' %}"></script>
 {% endblock %}

@@ -118,6 +118,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+    text-decoration: none;
 }
 
 .action-btn:hover {

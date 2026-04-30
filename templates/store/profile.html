@@ -10,31 +10,22 @@
 
 {% block content %}
     <main class="profile-container">
-        <!-- === Блок погоды === -->
         <section class="weather-card">
-            <div class="weather-icon">🌤</div>
+            <div class="weather-icon">{{ weather.icon }}</div>
             <div class="weather-info">
-                <div class="weather-temp" id="weather-temp">--°C</div>
-                <div class="weather-location" id="weather-location">Определяем...</div>
+                <div class="weather-temp">{{ weather.temp }}</div>
+                <div class="weather-location">{{ weather.location }}</div>
             </div>
-            <!-- Индикатор загрузки -->
-            <div class="loader" id="weather-loader"></div>
         </section>
         <!-- Остальное содержимое -->
         <section class="profile-header">
             <div class="avatar-wrapper">
                 <!-- Аватар: без переносов в src -->
-                <img
-                        src="
-
-
-
-
-
-                                {% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/profile/default-avatar.png' %}{% endif %}"
-                        alt="Аватар"
-                        class="profile-avatar"
-                        id="avatar-preview"
+                <img src="
+                      {% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/profile/default-avatar.png' %}{% endif %}"
+                     alt="Аватар"
+                     class="profile-avatar"
+                     id="avatar-preview"
                 >
                 <button class="edit-avatar" onclick="window.location='{% url 'users:settings' %}'">✎</button>
             </div>
@@ -63,45 +54,4 @@
             <button class="action-btn" onclick="window.location='{% url 'users:logout' %}'">Выход</button>
         </section>
     </main>
-    <script>
-        async function loadWeather() {
-            const card = document.querySelector('.weather-card');
-            const loader = document.getElementById('weather-loader');
-
-            // Показываем анимацию
-            card.classList.add('loading');
-
-            try {
-                const ipResponse = await fetch('http://ip-api.com/json/?fields=city');
-                const ipData = await ipResponse.json();
-                const city = ipData.city || 'Ekaterinburg';
-
-                const weatherResponse = await fetch(`https://wttr.in/${city}?format=j1`);
-                const data = await weatherResponse.json();
-
-                const temp = data.current_condition[0].temp_C;
-                const iconCode = data.current_condition[0].weather_code;
-
-                // Картинка погоды (эмодзи)
-                const icons = {
-                    '113': '☀️', '116': '⛅', '119': '☁️', '122': '🌧',
-                    '143': '🌫', '176': '🌦', '185': '🌨', '200': '⛈',
-                    '230': '🌩', '248': '🌫', '260': '🌬', '263': '🌦'
-                };
-
-                document.querySelector('.weather-icon').textContent = icons[iconCode] || '🌤';
-                document.getElementById('weather-temp').textContent = `${temp}°C`;
-                document.getElementById('weather-location').textContent = city;
-            } catch (err) {
-                console.error('Погода не загружена:', err);
-                document.getElementById('weather-temp').textContent = '—°C';
-                document.getElementById('weather-location').textContent = 'Ошибка';
-            } finally {
-                // Скрываем анимацию
-                card.classList.remove('loading');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadWeather);
-    </script>
 {% endblock %}

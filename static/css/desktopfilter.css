@@ -24,7 +24,7 @@
 
 /* Эффект при наведении */
 .desktop-filter-btn:hover {
-    background: var(--btn-hover-bg, #f0f0ff);
+
     border-color: #6e8efb;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(110, 142, 251, 0.15);

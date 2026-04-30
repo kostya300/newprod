@@ -1,0 +1,62 @@
+<!-- templates/store/goodsforinternet.html -->
+{% extends "base.html" %}
+{% load static %}
+{% load cache %}
+
+{% block title %}🔎 Умный поиск товаров{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/goodsforinternet.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="ai-search-page">
+        <section class="search-section">
+            <h2>Найдите лучшие товары в интернете</h2>
+            <p>Опишите, что ищете — ИИ проанализирует рынок и подберёт варианты</p>
+
+            <!-- Форма с перезагрузкой -->
+            <form method="post" class="search-form">
+                {% csrf_token %}
+                <div class="search-input-group">
+                    <input type="text"
+                           name="query"
+                           value="{{ query }}"
+                           placeholder="Пример: 'наушники для работы, до 5000₽'"
+                           autofocus
+                           class="search-input"/>
+                    <button type="submit" class="search-btn">🔍 Найти через ИИ</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Результаты -->
+        {% if products %}
+            <section class="products-grid">
+                {% cache 3600 ai_products query %}
+                    {% for product in products %}
+                        <div class="ai-product-card">
+                            <img
+                                    src="https://placehold.co/300x200?text={{ product.name|slice:":20" }}&bg=dee6f3&color=1a3c88&font=roboto"
+                                    alt="{{ product.name }}"
+                                    onerror="this.onerror=null; this.src='https://placehold.co/300x200?text=Товар';"
+                            >
+
+                            <div class="ai-product-info">
+                                <h3 class="product-title">{{ product.name }}</h3>
+                                <div class="product-price">{{ product.price }} ₽</div>
+                                <p class="product-desc"><small>Магазин:
+                                    <strong>{{ product.store|default:"Неизвестно" }}</strong></small></p>
+                                <a href="{{ product.url }}" target="_blank" class="action-btn">
+                                    Перейти ↗
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endcache %}
+            </section>
+        {% elif query %}
+            <p>Товары не найдены. Попробуйте уточнить запрос.</p>
+        {% endif %}
+    </main>
+{% endblock %}

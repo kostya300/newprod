@@ -2,7 +2,7 @@
 
 /* === КОНТЕЙНЕР — задаёт точку отсчёта === */
 .filter-dropdown-container {
-    position: relative; /* ← КЛЮЧЕВОЕ СЛОВО */
+    position: relative;
 }
 
 /* === ВЫПАДАЮЩАЯ ПАНЕЛЬ === */
@@ -14,14 +14,29 @@
     display: none;
     z-index: 1000;
     margin-top: 23px;
-    background: var(--card-bg, #fff);
+
+    /* Фон и рамка */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-color, #e0e0e0);
+
+    /* Тень — мягкая, но заметная */
+    box-shadow: 0 10px 30px var(--shadow-color);
+
+    /* Отступы */
     padding: 1.5rem;
+    color: var(--text-color);
 }
 
-/* Форма */
+/* Заголовок (если добавите позже) */
+#header-filter-dropdown h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* === Форма === */
 .filter-dropdown-form .form-group {
     margin-bottom: 1rem;
 }
@@ -30,7 +45,7 @@
     display: block;
     font-size: 0.9em;
     font-weight: 600;
-    color: var(--text-color, #333);
+    color: var(--text-color);
     margin-bottom: 0.4rem;
 }
 
@@ -38,14 +53,22 @@
 .filter-select {
     width: 100%;
     padding: 0.6rem;
-    border: 1px solid var(--border-color, #ddd);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: var(--input-bg, #fff);
-    color: var(--text-color, #333);
+    background: var(--input-bg);
+    color: var(--text-color);
     font-size: 1em;
+    transition: border 0.2s ease;
 }
 
-/* Кнопки */
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: #6e8efb; /* Яркий акцент — виден в обеих темах */
+    box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+}
+
+/* === Кнопки === */
 .dropdown-actions {
     display: flex;
     gap: 10px;
@@ -60,6 +83,8 @@
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .apply-btn {
@@ -67,19 +92,32 @@
     color: white;
 }
 
-.close-btn {
-    background: var(--border-color, #eee);
-    color: var(--text-color, #555);
-}
-
 .apply-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3);
 }
 
-/* Скрыть на мобильных */
+.close-btn {
+    background: var(--border-color);
+    color: var(--text-color);
+}
+
+.close-btn:hover {
+    background: #555;
+    color: #fff;
+}
+
+/* === Адаптивность === */
 @media (max-width: 768px) {
     .filter-dropdown-container {
         display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #header-filter-dropdown {
+        width: 300px;
+        left: -90px; /* Центрируем относительно кнопки */
+        padding: 1.2rem;
     }
 }

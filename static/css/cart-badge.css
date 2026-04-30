@@ -1,0 +1,48 @@
+.cart-badge {
+    /* Позиционирование */
+
+    top: 17px;
+    right: 19px;               /* Меньше отступ — компактнее */
+
+    /* Размеры */
+    min-width: 16px;              /* Минимум для "1" */
+    height: 16px;                 /* Немного меньше — лучше для мобилок */
+    padding: 0 3px;               /* Добавляем горизонтальный отступ для "10", "11" */
+
+    /* Внешний вид */
+    background: #ff3b30;          /* Яркий красный — контрастный в обеих темах */
+    color: white;
+    font-size: 11px;              /* Чуть меньше — читабельно на маленьких экранах */
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+
+    /* Форма */
+    border-radius: 8px;           /* Не строго 50% — чтобы "10", "11" не выглядело как овал */
+    border: 1.5px solid white;    /* Тоньше бордер — аккуратнее */
+
+    /* Эффекты */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    /* Прочее */
+    z-index: 10;
+    white-space: nowrap;          /* Предотвращает перенос */
+    overflow: hidden;             /* Обрезает, если вдруг слишком длинное число */
+}
+@media (max-width: 480px) {
+    .cart-badge {
+        top: -5px;
+        right: -5px;
+        height: 15px;
+        min-width: 15px;
+        font-size: 10px;
+        padding: 0 2px;
+        border-width: 1.2px;
+    }
+    .cart-text {
+        display: none;
+    }
+    .cart-icon {
+        display: inline;
+    }
+}

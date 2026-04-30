@@ -7,85 +7,75 @@
 {% endblock %}
 
 {% block content %}
-{% include "store/includes/header.html" %}
+    {% csrf_token %}
+    <div style="display: none;">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </div>
+    <!-- остальной контент -->
+    {% include "store/includes/header.html" %}
 
     <section class="hero">
         <h1><span class="gradient-text">КОРЗИНА</span></h1>
         <p class="typewriter-text"></p>
     </section>
 
-    <section class="cart-container">
+    <section class="cart-container" id="cart-container">
         {% if cart_items %}
-            <div class="cart-items">
+            <div class="cart-items" id="cart-items-list">
                 {% for item in cart_items %}
-                    <div class="cart-item" data-id="{{ item.id }}">
-                        <img src="{{ item.image }}" alt="{{ item.name }}" class="item-image">
+                    <div class="cart-item" id="item-{{ item.id }}">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-image">
                         <div class="item-info">
                             <h3 class="item-name">{{ item.product.name }}</h3>
                             <div class="item-controls">
-                                <button class="qty-btn minus">−</button>
+                                <!-- Уменьшить -->
+                                <form method="post" action="{% url 'basket_remove_one' item.id %}"
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="qty-btn minus">−</button>
+                                </form>
+
+                                <!-- Количество -->
                                 <span class="quantity">{{ item.quantity }}</span>
-                                <button class="qty-btn plus">+</button>
+
+                                <!-- Увеличить -->
+                                <form method="post" action="{% url 'basket_add_one' item.id %}"
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="qty-btn plus">+</button>
+                                </form>
+
+                                <!-- Цена -->
                                 <span class="item-price">{{ item.total_price }} ₽</span>
                             </div>
                         </div>
-                        <button class="remove-btn">×</button>
+
+                        <!-- Удалить -->
+                        <form method="post" action="{% url 'basket_remove' item.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="remove-btn">×</button>
+                        </form>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- Блок доставки и данных клиента -->
+            <!-- Блок доставки -->
             <section class="checkout-section">
                 <h2>Оформление заказа</h2>
-
-                <div class="delivery-options">
-                    <h3>Способ доставки</h3>
-                    <label class="radio-label">
-                        <input type="radio" name="delivery" value="courier" checked>
-                        Курьером (1-2 дня) — 300 ₽
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="delivery" value="pickup">
-                        Самовывоз из магазина — бесплатно
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="delivery" value="post">
-                        Почта России (5-7 дней) — 200 ₽
-                    </label>
-                </div>
-
-                <div class="customer-info">
-                    <h3>Данные получателя</h3>
-                    <div class="form-group">
-                        <label for="fullname">ФИО</label>
-                        <input type="text" id="fullname" placeholder="Иван Иванов" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Телефон</label>
-                        <input type="tel" id="phone" placeholder="+7 (999) 123-45-67" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="example@domain.com" required>
-                    </div>
-
-                    <div class="form-group address-field">
-                        <label for="address">Адрес доставки</label>
-                        <input type="text" id="address" placeholder="г. Москва, ул. Ленина, д. 1, кв. 10">
-                    </div>
-                </div>
+                {% include "store/includes/ordersection.html" %}
             </section>
 
-            <div class="cart-summary">
+            <!-- Итог -->
+            <div class="cart-summary" id="cart-summary">
                 <div class="total">
                     <strong>Итого:</strong>
-                    <span id="total-amount">{{ cart_total|floatformat:0 }} ₽</span>
+                    <span>{{ cart_total|floatformat:0 }} ₽</span>
                 </div>
                 <button class="checkout-btn">Оплатить</button>
             </div>
         {% else %}
-            <div class="empty-cart">
-                <p>Ваша корзина пуста</p>
+            <div class="empty-cart" id="empty-cart">
+                <p style="margin: 0 0 30px 0;">Ваша корзина пуста</p>
                 <a href="{% url 'catalog' %}" class="gradient-btn">Перейти в каталог</a>
             </div>
         {% endif %}
@@ -94,5 +84,6 @@
 
 {% block extra_js %}
     <script src="{% static 'js/animateprintcart.js' %}"></script>
-    <script src="{% static 'js/cart.js' %}"></script>
+
+
 {% endblock %}

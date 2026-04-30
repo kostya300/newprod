@@ -1,0 +1,36 @@
+<div class="delivery-options">
+    <h3>Способ доставки</h3>
+    <label class="radio-label">
+        <input type="radio" name="delivery" value="courier" checked>
+        Курьером (1-2 дня) — 300 ₽
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="delivery" value="pickup">
+        Самовывоз из магазина — бесплатно
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="delivery" value="post">
+        Почта России (5-7 дней) — 200 ₽
+    </label>
+</div>
+
+<div class="customer-info">
+    <h3>Данные получателя</h3>
+    <div class="form-group">
+        <label for="fullname">ФИО</label>
+        <input type="text" id="fullname" placeholder="Иван Иванов" required>
+    </div>
+    <div class="form-group">
+        <label for="phone">Телефон</label>
+        <input type="tel" id="phone" placeholder="+7 (999) 123-45-67" required>
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="example@domain.com" required>
+    </div>
+
+    <div class="form-group address-field">
+        <label for="address">Адрес доставки</label>
+        <input type="text" id="address" placeholder="г. Москва, ул. Ленина, д. 1, кв. 10">
+    </div>
+</div>

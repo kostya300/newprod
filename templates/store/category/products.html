@@ -20,18 +20,19 @@
     <!-- Сетка смартфонов -->
     <section class="products-grid">
         {% for product in products %}
-            <a href="{% url 'product_detail' slug=product.slug %}" class="product-card-link">
-                <div class="product-card">
-                    <div class="product-badge">Новинка</div>
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}"
-                         onerror="this.src='https://via.placeholder.com/200x200?text=No+Image'">
-                    <h3 class="product-title">{{ product.name }}</h3>
-                    <p class="product-desc">8 ГБ ОЗУ, 256 ГБ ПЗУ, камера 200 МП</p>
-                    <div class="product-price">от {{ product.price }} ₽</div>
-                    <button class="action-btn" data-id="{{ product.id }}">В корзину
-                    </button>
-                </div>
-            </a>
+            <div class="product-card" onclick="window.location='{% url 'product_detail' slug=product.slug %}'">
+                <div class="product-badge">Новинка</div>
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" ...>
+
+                <h3 class="product-title">{{ product.name }}</h3>
+                <p class="product-desc">8 ГБ ОЗУ, 256 ГБ ПЗУ, камера 200 МП</p>
+                <div class="product-price">от {{ product.price }} ₽</div>
+
+                <!-- Кнопка "В корзину" — отдельная ссылка -->
+                <a href="{% url 'basket_add' product_id=product.id %}" class="action-btn">
+                    В корзину
+                </a>
+            </div>
         {% empty %}
 
         {% endfor %}

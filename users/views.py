@@ -1,4 +1,6 @@
 # users/views.py
+
+import requests
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -6,6 +8,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
+from psycopg.types.net import ip_address
+
 from .forms import RegisterForm, LoginForm, ProfileEditForm, AvatarEditForm
 from django.contrib.auth.views import LoginView
 from django.views.generic import FormView
@@ -15,6 +19,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
+
 
 @method_decorator(ratelimit(key='ip', rate='3/m'), name='post')  # макс. 3 попытки в минуту с IP
 @method_decorator(ratelimit(key='post:email', rate='5/h'), name='post')  # 5 регистраций на email в час
@@ -73,12 +78,78 @@ def logout_view(request):
     return redirect('home')
 
 
+
 @login_required
 def profile(request):
     user = request.user
+
+    # === 1. Определяем город по IP ===
+    try:
+        ip_response = requests.get('http://ip-api.com/json/?fields=city', timeout=5)
+        city_data = ip_response.json()
+        city = city_data.get('city', 'Екатеринбург')  # ← Используем кириллицу!
+    except:
+        city = 'Екатеринбург'
+
+    # === 2. Погода через Яндекс ===
+    weather = {
+        'icon': '🌤',
+        'temp': '—°C',
+        'location': 'Ошибка'
+    }
+
+    try:
+        api_key = 'ВАШ_КЛЮЧ_ЯНДЕКС'  # ← ЗАМЕНИТЬ!
+        url = f'https://api.weather.yandex.ru/v2/forecast?city={city}&lang=ru_RU'
+
+        headers = {
+            'X-Yandex-API-Key': api_key
+        }
+
+        response = requests.get(url, headers=headers, timeout=5)
+        data = response.json()
+
+        if 'fact' in data:
+            fact = data['fact']
+            temp = fact['temp']
+            condition = fact['condition']
+
+            # Эмодзи по погоде
+            icons = {
+                'clear': '☀️',
+                'partly-cloudy': '⛅',
+                'cloudy': '☁️',
+                'overcast': '☁️',
+                'light-rain': '🌦',
+                'rain': '🌧',
+                'heavy-rain': '⛈',
+                'downpour': '🌧',
+                'hail': '🌨',
+                'thunderstorm': '⛈',
+                'thunderstorm-with-rain': '⛈',
+                'snow': '❄️',
+                'light-snow': '🌨',
+                'wet-snow': '🌨',
+                'snow-showers': '🌨',
+                'fog': '🌫',
+                'dust': '💨',
+                'haze': '🌫',
+                'light-snow-showers': '🌨',
+                'moderate-snow-showers': '🌨',
+                'heavy-snow-showers': '🌨',
+            }
+
+            weather = {
+                'icon': icons.get(condition, '🌤'),
+                'temp': f'{temp}°C',
+                'location': city
+            }
+    except Exception as e:
+        print("Ошибка погоды (Яндекс):", e)
+
     context = {
         'user': user,
-        'orders_count': 14  # потом подключим к заказам
+        'weather': weather,
     }
     return render(request, 'store/profile.html', context)
 

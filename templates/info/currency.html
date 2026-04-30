@@ -14,7 +14,18 @@
         <div class="currency-grid" id="currency-grid">
             <p>Загрузка...</p>
         </div>
-       <!-- Информационная карточка -->
+        <div class="currency-grid" id="currency-grid">
+            {% for curr in currencies %}
+                <div class="currency-card">
+                    <div class="flag">{{ curr.code }}</div>
+                    <div class="info">
+                        <div class="name">{{ curr.name }}</div>
+                        <div class="rate">{{ curr.rate }} ₽</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- Информационная карточка -->
         <div class="info-card-container">
             <div class="info-card">
                 <div class="info-card-image">
@@ -33,7 +44,7 @@
                 </div>
             </div>
         </div>
-    <div class="info-card-container">
+        <div class="info-card-container">
             <div class="info-card">
                 <div class="info-card-image">
                     <img src="{% static 'images/radio/foto1.png' %}" alt="Рынок труда">
@@ -51,13 +62,14 @@
                 </div>
             </div>
         </div>
-    <div class="info-card-container">
+        <div class="info-card-container">
             <div class="info-card">
                 <div class="info-card-image">
                     <img src="{% static 'images/radio/foto1.png' %}" alt="Рынок труда">
                 </div>
                 <div class="info-card-content">
-                    <h3>📈 <a href="https://www.rbc.ru/life/news/695241d59a79474610e80e31" style="text-decoration: none;">Как изменятся зарплаты айтишников в 2026 году</a></h3>
+                    <h3>📈 <a href="https://www.rbc.ru/life/news/695241d59a79474610e80e31"
+                             style="text-decoration: none;">Как изменятся зарплаты айтишников в 2026 году</a></h3>
                     <p>
                         РБК Life выяснил, каким специалистам стоит ждать максимальную индексацию
                     </p>

@@ -9,9 +9,10 @@
 
         <!-- templates/store/includes/header.html -->
         <button class="desktop-filter-btn" id="open-filter-btn" title="Фильтры">
-            <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-</svg>
+            <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
             <span class="filter-text">Фильтры</span>
         </button>
 
@@ -30,6 +31,7 @@
                 <button class="avatar-btn" title="Профиль" onclick="window.location='{% url 'users:profile' %}'">
                     <img src="
 
+
                             {% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/profile/default-avatar.png' %}{% endif %}"
                          alt="Аватар"
                          class="mini-avatar">
@@ -38,10 +40,15 @@
 
             <div class="desktop-actions">
                 <button class="gradient-btn" onclick="window.location='{% url 'users:logout' %}'">Выйти</button>
-                <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">Корзина</button>
+                <button class="gradient-btn" onclick="window.location='{% url 'cart' %}'">Корзина
+                    {% if cart_total_items > 0 %}
+                        <span class="cart-badge">{{ cart_total_items }}</span>
+                    {% endif %}
+                </button>
             </div>
         {% else %}
             <button class="gradient-btn" onclick="window.location='{% url 'users:login' %}'">Войти</button>
         {% endif %}
     </div>
+
 </header>

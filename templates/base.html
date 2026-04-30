@@ -6,7 +6,6 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{% block title %}ВИКИ — Магазин техники{% endblock %}</title>
-
     <!-- Блокирующий скрипт: применяем тему до загрузки стилей -->
     <script>
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -26,6 +25,7 @@
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdownbase.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdownbase2.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cart-badge.css' %}">
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     <link rel="stylesheet" href="{% static 'css/ai-assistant.css' %}">
 
@@ -93,7 +93,7 @@
                     <span class="link-text">Информация</span>
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a href="{% url 'currency' %}">💱 Курсы валют</a></li>
+                    <li><a href="{% url 'goods_for_internet' %}">💱 Умный поиск</a></li>
                     <li><a href="{% url 'radio' %}">📻 Местное радио</a></li>
                 </ul>
             </li>
@@ -137,23 +137,26 @@
     </main>
 
 
-
-
     {% include 'store/includes/aiassistent.html' %}
 </div>
-
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<script>
+    // Глобально добавляем CSRF-токен ко всем HTMX-запросам
+    document.body.addEventListener('htmx:beforeRequest', function (evt) {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (token && !evt.detail.headers['X-CSRFToken']) {
+            evt.detail.headers['X-CSRFToken'] = token.value;
+        }
+    });
+</script>
 <!-- Глобальные скрипты -->
 <script src="{% static 'js/ai-assistant.js' %}"></script>
 <script src="{% static 'js/searchopenandclose.js' %}"></script>
 <!-- Управление выпадающими меню -->
 <script src="{% static 'js/dropdown2.js' %}"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
-      id="hljs-light">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
-      id="hljs-dark" disabled>
+<!-- highlight.js — В САМОМ КОНЦЕ -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
 
 <script>
     const sidebar = document.getElementById('sidebar');
@@ -245,8 +248,31 @@
         }
     });
 </script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+      id="hljs-light">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+      id="hljs-dark" disabled>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+    // Функция смены темы подсветки
+    function updateHighlightTheme() {
+        const isDark = document.documentElement.classList.contains('dark-theme');
+        document.getElementById('hljs-light').disabled = isDark;
+        document.getElementById('hljs-dark').disabled = !isDark;
+        setTimeout(() => hljs.highlightAll(), 100);
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHighlightTheme();
+        hljs.highlightAll();
+    });
+</script>
 <script src="{% static 'js/filter.js' %}"></script>
 
 {% block extra_js %}{% endblock %}
+
 </body>
 </html>

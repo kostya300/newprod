@@ -10,7 +10,7 @@
 /* === Карточка "Товар недели" === */
 .weekly-product {
     position: relative;
-    width: 70%;
+    width: 100%;
     margin: 40px auto;
     padding: 30px;
     background-color: var(--card-bg);

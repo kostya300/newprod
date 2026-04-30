@@ -240,7 +240,7 @@ input[value="post"]:checked ~ .checkout-section .address-field {
 /* Пустая корзина */
 .empty-cart {
     text-align: center;
-    padding: 60px 20px;
+    padding: 160px 20px;
     color: var(--text-primary);
     opacity: 0.7;
 }

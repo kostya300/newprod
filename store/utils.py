@@ -7,21 +7,17 @@ import time
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Кэш токена
 _cached_token = None
-_token_expires_at = 0  # время, когда токен перестанет быть валидным
+_token_expires_at = 0
 
 
 def get_gigachat_token():
     global _cached_token, _token_expires_at
 
-    # Если токен ещё валиден — возвращаем его
     if _cached_token and time.time() < _token_expires_at:
         return _cached_token
 
-    # Иначе запрашиваем новый
     url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
-
     client_id = "019dbe18-36f9-738d-9258-0a657a42db7f"
     client_secret = "897389bb-3b8d-4e7e-9d4a-95c0b91a88aa"
 
@@ -41,8 +37,7 @@ def get_gigachat_token():
         if response.status_code == 200:
             data = response.json()
             _cached_token = data.get("access_token")
-            # Устанавливаем время истечения (например, на 28 минут раньше, чем надо)
-            _token_expires_at = time.time() + 1680  # 28 минут в секундах
+            _token_expires_at = time.time() + 1680  # 28 минут
             return _cached_token
         else:
             print("❌ Ошибка получения токена:", response.status_code, response.text)
