@@ -1,14 +1,13 @@
 # users/views.py
-
+from django_ratelimit.decorators import ratelimit
 import requests
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
-from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
-from psycopg.types.net import ip_address
+# from psycopg.types.net import ip_address
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from .forms import RegisterForm, LoginForm, ProfileEditForm, AvatarEditForm
@@ -16,6 +15,7 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import FormView
 from django.contrib.auth import logout
 import logging
+
 from django.views import generic
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator(ratelimit(key='ip', rate='3/m'), name='post')
-@method_decorator(ratelimit(key='post:email', rate='5/h'), name='post')
+@method_decorator(ratelimit(key='post:email', rate='5/m'), name='post')
 class UserRegisterView(View):
-    template_name = 'registration/register.html'
+    template_name = 'store/register.html'
     success_url = reverse_lazy('users:login')
 
     def dispatch(self, request, *args, **kwargs):
@@ -54,6 +54,8 @@ class UserRegisterView(View):
         return render(request, self.template_name, {'form': form})
 
 
+@method_decorator(ratelimit(key='ip', rate='5/m'), name='post') # 5 попыток с IP в минуту
+@method_decorator(ratelimit(key='post:username', rate='3/m'), name='post')
 class UserLoginView(View):
     template_name = 'store/login.html'  # Убедитесь, что путь правильный
     redirect_authenticated_user = True

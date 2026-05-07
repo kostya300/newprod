@@ -25,6 +25,8 @@ urlpatterns = [
     path('users/', include('users.urls')),
 
     path('', include("store.urls")),
+    path('oauth/', include('social_django.urls', namespace='social')),
+    path('api/', include('newprod.api.urls')),
 
 ]
 # Подключение медиа-файлов только в режиме DEBUG

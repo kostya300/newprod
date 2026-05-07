@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,9 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',  # ← Добавьте это ПЕРЕД вашими приложениями
+    'rest_framework.authtoken',
+    'drf_spectacular',
     'store.apps.StoreConfig',
     'users.apps.UsersConfig',
     'django_dump_load_utf8',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +72,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'newprod.context_processors.categories_context',
                 'newprod.context_processors.cart_context',
+                # social auth context processor
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -101,6 +109,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -110,21 +124,18 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        },
-        'django.core.mail': {
+        'drf_spectacular': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': True,
         },
-        'smtplib': {
+        'django.request': {
             'handlers': ['console'],
             'level': 'DEBUG',
-        }
+            'propagate': True,
+        },
     },
 }
-
 
 CACHES = {
     'default': {
@@ -135,8 +146,61 @@ CACHES = {
         }
     }
 }
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # ← JWT вместо сессий
+        # 'rest_framework.authentication.SessionAuthentication',  # можно оставить для браузера
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    # 🔥 Подключаем Spectacular как стандартный renderer
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Токен живёт 60 минут
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # Обновлять можно 7 дней
+    'ROTATE_REFRESH_TOKENS': True,  # Старый refresh отменяется при обновлении
+    'BLACKLIST_AFTER_ROTATION': True,  # Добавлять в чёрный список
+    'UPDATE_LAST_LOGIN': True,  # Обновлять last_login
 
+    'ALGORITHM': 'HS256',  # Алгоритм шифрования
+    'SIGNING_KEY': SECRET_KEY,  # Ключ из Django
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),  # Заголовок: Authorization: Bearer <токен>
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
+# settings.py
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ВИКИ API',
+    'DESCRIPTION': 'API для магазина техники ВИКИ',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+    },
+    # 🔐 Поддержка JWT
+    'SECURITY': [{
+        'BearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        }
+    }],
+    'SECURITY_DEFINITIONS': {
+        'BearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        }
+    },
+}
 
 LOGIN_URL = '/users/login/'
 AUTH_USER_MODEL = 'users.User'
@@ -156,6 +220,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+# social auth configs for github
+SOCIAL_AUTH_GITHUB_KEY = 'Ov23lituFgUhJdHaGrFF'
+SOCIAL_AUTH_GITHUB_SECRET = 'ff2c53a1d9bd934e512ad8ac87110bdab65d7b31'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '48328434690-8dvgf5hd33d8rqd4ss5158b058evp1hv.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -164,7 +234,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kostya.barnung@gmail.com'
 EMAIL_HOST_PASSWORD = 'mdxz jspq yelo cajc'  # из Google App Passwords
 DEFAULT_FROM_EMAIL = 'kostya.barnung@gmail.com'
-
 
 # Статика
 STATIC_URL = '/static/'
