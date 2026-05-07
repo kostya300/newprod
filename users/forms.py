@@ -2,16 +2,12 @@
 import os
 
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from .models import User
 
-class RegisterForm(forms.Form):
-    username = forms.CharField(
-        label="Имя и фамилия",
-        max_length=150,
-        widget=forms.TextInput(attrs={'placeholder': 'Введите имя'})
-    )
+class RegisterForm(UserCreationForm):
     email = forms.EmailField(
         label="Email",
         widget=forms.EmailInput(attrs={'placeholder': 'Введите email'})
@@ -21,22 +17,23 @@ class RegisterForm(forms.Form):
         max_length=15,
         widget=forms.TextInput(attrs={'placeholder': 'Введите номер'})
     )
-    password = forms.CharField(
-        label="Пароль",
-        strip=False,
-        widget=forms.PasswordInput(attrs={'placeholder': 'Придумайте пароль'})
-    )
-    confirm_password = forms.CharField(
-        label="Подтвердите пароль",
-        strip=False,
-        widget=forms.PasswordInput(attrs={'placeholder': 'Повторите пароль'})
-    )
 
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if User.objects.filter(username=username).exists():
-            raise forms.ValidationError("Пользователь с таким именем уже существует.")
-        return username
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'phone')
+        labels = {
+            'username': 'Имя пользователя',
+        }
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'Введите имя'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].label = 'Пароль'
+        self.fields['password1'].widget.attrs.update({'placeholder': 'Придумайте пароль'})
+        self.fields['password2'].label = 'Подтвердите пароль'
+        self.fields['password2'].widget.attrs.update({'placeholder': 'Повторите пароль'})
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -44,24 +41,16 @@ class RegisterForm(forms.Form):
             raise forms.ValidationError("Пользователь с таким email уже существует.")
         return email
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirm_password = cleaned_data.get("confirm_password")
-
-        if password != confirm_password:
-            raise forms.ValidationError("Пароли не совпадают.")
-        return cleaned_data
-
-    def save(self):
-        user = User.objects.create_user(
-            username=self.cleaned_data["username"],
-            email=self.cleaned_data["email"],
-            password=self.cleaned_data["password"],
-            phone=self.cleaned_data["phone"]
-        )
-        user.bonus_points = 100  # бонус за регистрацию
-        user.save()
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if hasattr(user, 'profile'):
+            user.profile.phone = self.cleaned_data["phone"]
+        else:
+            # Если профиль не создан — можно создать здесь или через сигнал
+            pass
+        if commit:
+            user.save()
         return user
 
 

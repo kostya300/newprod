@@ -1,6 +1,9 @@
 import re
-
+from django.views import View
 import requests
+from django.views.generic import ListView, CreateView
+from django.contrib.admin.templatetags.admin_list import pagination
+from django.core.paginator import Page, Paginator, PageNotAnInteger,EmptyPage
 from django.shortcuts import render, get_object_or_404, redirect
 from flatbuffers.flexbuffers import Object
 from sympy.integrals.meijerint_doc import category
@@ -16,15 +19,49 @@ from .utils import get_gigachat_token
 from users.models import User
 from .utils import get_gigachat_token  # ← из utils.py
 from urllib.parse import quote  # ← для quote(user_query), если хотите
-def index(request):
-    featured_products = Product.objects.filter(is_featured=True,in_stock=True)[:9]
-    categories = Category.objects.filter(is_active=True)[:6]
+class IndexView(ListView):
+    template_name = 'store/index.html'
+    context_object_name = 'featured_products'
 
-    context = {
-        'featured_products': featured_products,
-        'categories': categories,
-    }
-    return render(request, 'store/index.html', context)
+    def get_queryset(self):
+        """
+        Мы НЕ используем этот queryset напрямую,
+        но он нужен для совместимости с ListView.
+        Реальную логику делаем в get_context_data.
+        """
+        return Product.objects.none()  # заглушка
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Получаем page из GET
+        page = self.request.GET.get('page', 1)
+        try:
+            page = int(page)
+            if page < 1:
+                page = 1
+        except (ValueError, TypeError):
+            page = 1
+
+        # Фильтруем и ОБРЕЗАЕМ до 6 товаров (как в FBV)
+        featured_products_list = Product.objects.filter(
+            is_featured=True,
+            in_stock=True
+        )[:6]
+
+        # Пагинация: по 3 на страницу
+        paginator = Paginator(featured_products_list, 3)
+
+        try:
+            featured_products = paginator.page(page)
+        except (PageNotAnInteger, EmptyPage):
+            featured_products = paginator.page(1)
+
+        # Добавляем в контекст
+        context['featured_products'] = featured_products
+        context['categories'] = Category.objects.filter(is_active=True)[:6]
+
+        return context
 
 # filter page for desktop
 def filter_page(request):
@@ -56,27 +93,77 @@ def filter_page(request):
     }
     return render(request, 'store/catalog/filter.html', context)
 
-def catalog(request):
-    categories = Category.objects.filter(is_active=True)
-    return render(request, 'store/catalog.html', {
-        'categories': categories,
-    })
-def products(request):
-    category_slug = request.GET.get('category')
-    category = None
-    products = Product.objects.filter(in_stock=True)
+class CatalogView(ListView):
+    template_name = 'store/catalog.html'
+    context_object_name = 'featured_products'  # чтобы в шаблоне осталось featured_products
 
-    if category_slug:
-        category = get_object_or_404(Category, slug=category_slug)
-        products = products.filter(category=category)
+    def get_queryset(self):
+        # Заглушка — не используется, но нужна для ListView
+        return Product.objects.none()
 
-    categories = Category.objects.filter(is_active=True)  # Для выпадающего меню
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    return render(request, 'store/category/products.html', {
-        'category': category,
-        'products': products,
-        'categories': categories,
-    })
+        # Все активные категории
+        categories = Category.objects.filter(is_active=True)
+
+        # Получаем номер страницы
+        page = self.request.GET.get('page', 1)
+
+        # Фильтруем ВСЕ избранные товары (без [:6])
+        featured_products_list = Product.objects.filter(
+            is_featured=True,
+            in_stock=True
+        )
+
+        # Пагинация: 3 товара на страницу
+        per_page = 3
+        paginator = Paginator(featured_products_list, per_page)
+
+        try:
+            featured_products = paginator.page(page)
+        except PageNotAnInteger:
+            featured_products = paginator.page(1)
+        except EmptyPage:
+            featured_products = paginator.page(paginator.num_pages)
+        except Exception:
+            featured_products = paginator.page(1)
+
+        # Добавляем в контекст
+        context['featured_products'] = featured_products
+        context['categories'] = categories
+
+        return context
+class ProductsListView(ListView):
+    model = Product
+    context_object_name='products'
+    template_name = 'store/category/products.html'
+    paginate_by = 2
+    paginate_orphans = 1
+    def get_queryset(self):
+        """Фильтруем товары по категории и доступности"""
+        queryset = Product.objects.filter(in_stock=True)
+        category_slug = self.request.GET.get('category')
+        if category_slug:
+            category = get_object_or_404(Category,slug=category_slug)
+            queryset = queryset.filter(category=category)
+        return queryset
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        # Текущая категория
+        category_slug = self.request.GET.get('category')
+        context['category'] = None
+        if category_slug:
+            context['category'] = get_object_or_404(Category,slug=category_slug)
+        # Все активные категории (для фильтра)
+        context['categories'] = Category.objects.filter(is_active=True)
+        context['featured_products'] = Product.objects.filter(
+            is_featured=False,
+            in_stock=True
+        )[:6]
+        context['current_category'] = category_slug or ''
+        return context
+
 
 @csrf_exempt
 @login_required
@@ -103,6 +190,32 @@ def basket_add(request, product_id):
 
     # Возвращаемся на ту же страницу
     return redirect(request.META['HTTP_REFERER'])
+
+# @csrf_exempt
+# @login_required
+# def basket_add(request, product_id):
+#     product = get_object_or_404(Product, id=product_id)
+#
+#     # Получаем количество из POST
+#     quantity = int(request.POST.get('quantity', 1))
+#     if quantity < 1:
+#         quantity = 1
+#
+#     # Пытаемся найти товар в корзине
+#     basket_item, created = Basket.objects.get_or_create(
+#         user=request.user,
+#         product=product,
+#         defaults={'quantity': quantity}
+#     )
+#
+#     if not created:
+#         # Если уже есть — увеличиваем
+#         basket_item.quantity += quantity
+#         basket_item.save()
+#     # Если новый — создан с нужным количеством
+#
+#     # Возвращаемся на ту же страницу
+#     return redirect(request.META['HTTP_REFERER'])
 
 
 GIGACHAT_TOKEN = "eyJjdHkiOiJqd3QiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0.RLOoO2lvKCrRUFMRTK3AzOADyKM1xHmT0HPqQZ6LWmHIeey2KK8yPyLMNk2IYcr9wx4g1N1dWT-pKVNuBpJ0aRxNJr6F63Q5A21Wz06pwxnEv2F3O4_mjeNfN0ZDXjdX9rL1S8FHZAqD1_frIKyyB26p2BDDego6VADoNWdxIquoVZ1ncss9edkDl9AFxpVrEfcRuOdTp4pW9xUwW4f0vWI1UsASp8KRFJKIuBqqzgHGvnyzXWqJWvt0W9ANHtA_vZ2sTJe7kEKkfEeYW1Tjgp8C0y9freaTEI4UdsFFz_QH3am9ThAW4NMtfpleZW3IodMS4-TUP5SbdGPzEMMUYw.K6b-4aYjkY6zf7jmWtd__g.M-4SWEYdTdAglvDcH2xOCKvE5SRyCA7EBUu35bFpzh-VnArn2Rk5OKRqZeGeLEKiClRrgPAMK-bHbAKo1CmWu9nwRqmCGY--jRHfuzx9sv8ScIc8Kb7F1kpsba_LvfRM9R7088IaxBEcCYGqIZ00R1D0jTfvE0zS5gqjxr1FSy6v27HQNdZT1nLloFpxT_xoyanKi6TQ9TMrL7TCwvkrqw7SFdPsrDORHbiF66Z7kzeI1FJ0NnFAWnblZSNE3Ll8GBNhsuVqiFQntIgEAkawSvpz1juy6M9qkQnhnB8N-hMjPxs6GPpcSyuctbZOKiHN77Pisvi39twXanz25XR9FwNF3DzSPGanzJW9_w2obeA100OAnIjiLGlZbRx_oAZQcBSIygDnAMXMXEiM4ZdkbbLkaZuVMXAtONSrg_pC7869g0ew1De8N__bBeU9xm3RjGEv7MMNT25Rkpzu6M9aA8HxDmw0XOB4CY9dNzW7MMCO4VJCk1vheHhll_Oo3EWInkzMVlyYRM133cOXk0rlQKGjJjA9wsF_QuTnrtEbioLWHfzKaQMM3YAm3FwA-eIBbTfmBWM2-0-6RaKDpnO4KICYmCs0ZWPy2BkLeoYpqm0H_9BMYAtn_Uak7Qukc-hW6OHfgGagh-g-f4fvADiaAXtMCNTTyhPpdwSeISKd9fLcwb0EOkxUgy7QKkuhhjWMLpxle0yLpm5sIYEVBcN5ON8tylVWrXfU3HKN5OCmvQE.btIpUx-8BcdCigEi_N3wxlphzp-Dt2CtnMnnNSqHVjs"

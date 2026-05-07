@@ -1,0 +1,56 @@
+/* --- Пагинация --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 40px 0 20px;
+    flex-wrap: wrap;
+}
+
+.pagination-number,
+.pagination-arrow {
+    padding: 8px 12px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a3c88;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    min-width: 36px;
+    text-align: center;
+}
+
+.pagination-number:hover,
+.pagination-arrow:not(.disabled):hover {
+    background-color: #1a3c88;
+    color: white;
+    border-color: #1a3c88;
+}
+
+.pagination-number.active {
+    background-color: #1a3c88;
+    color: white;
+    border-color: #1a3c88;
+    font-weight: 600;
+}
+
+.pagination-arrow.disabled {
+    color: #ccc;
+    border-color: #eee;
+    cursor: not-allowed;
+}
+
+/* Адаптивность */
+@media (max-width: 500px) {
+    .pagination {
+        gap: 4px;
+    }
+
+    .pagination-number,
+    .pagination-arrow {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}

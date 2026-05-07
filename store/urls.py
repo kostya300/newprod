@@ -3,9 +3,9 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='home'),
-    path('catalog/', views.catalog, name='catalog'),
-    path('products/', views.products, name='products'),
+    path('', views.IndexView.as_view(), name='home'),
+    path('catalog/', views.CatalogView.as_view(), name='catalog'),
+    path('products/', views.ProductsListView.as_view(), name='products'),
 
     path('filters/', views.filter_page, name='filter_page'),
     path('cart/', views.cart, name='cart'),

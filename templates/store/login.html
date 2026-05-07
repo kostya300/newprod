@@ -77,7 +77,7 @@
         </div>
 
         <div class="login-footer">
-            <a href="#" class="forgot-link">Забыли пароль?</a>
+            <a href="{% url 'users:password_reset' %}" class="forgot-link">Забыли пароль?</a>
             <p>Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></p>
         </div>
     </section>

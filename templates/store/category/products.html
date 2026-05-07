@@ -29,9 +29,11 @@
                 <div class="product-price">от {{ product.price }} ₽</div>
 
                 <!-- Кнопка "В корзину" — отдельная ссылка -->
-                <a href="{% url 'basket_add' product_id=product.id %}" class="action-btn">
-                    В корзину
-                </a>
+                <form method="post" action="{% url 'basket_add' product_id=product.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="action-btn">В корзину</button>
+                </form>
             </div>
         {% empty %}
 

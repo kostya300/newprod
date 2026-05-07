@@ -17,6 +17,7 @@
     <!-- Стили -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/header1.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
     <link rel="stylesheet" href="{% static 'css/desktopfilter.css' %}">
     <link rel="stylesheet" href="{% static 'css/product-card.css' %}">
@@ -27,6 +28,7 @@
     <link rel="stylesheet" href="{% static 'css/dropdownbase2.css' %}">
     <link rel="stylesheet" href="{% static 'css/cart-badge.css' %}">
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/ai-assistant.css' %}">
 
 
@@ -38,98 +40,102 @@
 
 <div class="wrapper">
     <!-- Боковое меню -->
-    <nav class="sidebar" id="sidebar">
-        <h2 class="logo">ВИКИ</h2>
+   <nav class="sidebar" id="sidebar">
+    <h2 class="logo">ВИКИ</h2>
 
-        <ul class="menu">
-            <!-- templates/base.html -->
-            {% if user.is_authenticated %}
-                <!-- templates/base.html -->
-                <!-- templates/base.html -->
-                <li class="nav-profile-link">
-                    <a href="{% url 'users:profile' %}">
-                        <!-- На мобильных: только иконка -->
-                        <span class="icon mobile-only">👤 Профиль</span>
+    <ul class="menu">
+        <!-- Профиль -->
+        {% if user.is_authenticated %}
+            <li class="nav-profile-link">
+                <a href="{% url 'users:profile' %}">
+                    <i class='bx bx-user-circle icon mobile-only'></i>
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Аватар" class="nav-avatar desktop-only">
+                    {% else %}
+                        <i class='bx bx-user-circle icon desktop-only'></i>
+                    {% endif %}
+                    <span class="link-text">Профиль</span>
+                </a>
+            </li>
+        {% endif %}
 
-                        <!-- На десктопе: аватар или иконка -->
-                        {% if user.avatar %}
-                            <img src="{{ user.avatar.url }}" alt="Аватар" class="nav-avatar desktop-only">
-                        {% else %}
-                            <span class="icon desktop-only">👤</span>
-                        {% endif %}
+        <!-- Каталог -->
+        <li class="dropdown">
+            <a href="{% url 'catalog' %}" class="dropdown-link">
+                <i class='bx bx-store icon'></i>
+                <span class="link-text">Каталог</span>
+                <span class="arrow">▼</span>
+            </a>
+            <ul class="dropdown-menu">
+                {% for category in categories %}
+                    <li>
+                        <a href="{% url 'products' %}?category={{ category.slug }}">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
 
-                        <span class="link-text">Профиль</span>
-                    </a>
-                </li>
-            {% endif %}
-            <li class="dropdown">
-                <a href="{% url 'catalog' %}" class="dropdown-link">
-                    <span class="icon">📱</span>
-                    <span class="link-text">Каталог</span>
-                    <span class="arrow">▼</span>
-                </a>
-                <ul class="dropdown-menu">
-                    {% for category in categories %}
-                        <li>
-                            <a href="{% url 'products' %}?category={{ category.slug }}">
-                                {{ category.name }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </li>
-            <li>
-                <a href="{% url 'home' %}">
-                    <span class="icon">🏠</span>
-                    <span class="link-text">Главная</span>
-                </a>
-            </li>
+        <!-- Главная -->
+        <li>
+            <a href="{% url 'home' %}">
+                <i class='bx bx-home icon'></i>
+                <span class="link-text">Главная</span>
+            </a>
+        </li>
 
+        <!-- Информация -->
+        <li class="dropdown2">
+            <a href="#" class="dropdown-toggle">
+                <i class='bx bx-info-circle icon'></i>
+                <span class="link-text">Информация</span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'goods_for_internet' %}"><i class='bx bx-search-alt-2'></i> Умный поиск</a></li>
+                <li><a href="{% url 'radio' %}"><i class='bx bxs-radio'></i> Местное радио</a></li>
+            </ul>
+        </li>
 
-            <!-- templates/base.html -->
-            <li class="dropdown2">
-                <a href="#" class="dropdown-toggle">
-                    <span class="icon">ℹ️</span>
-                    <span class="link-text">Информация</span>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a href="{% url 'goods_for_internet' %}">💱 Умный поиск</a></li>
-                    <li><a href="{% url 'radio' %}">📻 Местное радио</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="{% url 'favorites' %}">
-                    <span class="icon">❤️</span>
-                    <span class="link-text">Избранное</span>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <span class="icon">🔔</span>
-                    <span class="link-text">Уведомления</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'contacts' %}">
-                    <span class="icon">📞</span>
-                    <span class="link-text">Контакты</span>
-                </a>
-            </li>
-            <!-- Ссылка на страницу фильтрации -->
-            <li>
-                <a href="{% url 'filter_page' %}">
-                    <span class="icon">🔍</span>
-                    <span class="link-text">Фильтр товаров</span>
-                </a>
-            </li>
-        </ul>
+        <!-- Избранное -->
+        <li>
+            <a href="{% url 'favorites' %}">
+                <i class='bx bx-heart icon'></i>
+                <span class="link-text">Избранное</span>
+            </a>
+        </li>
 
-        <!-- Управление -->
-        <div class="controls">
-            <button id="theme-toggle" class="theme-toggle">🌙</button>
-            <button id="collapse-toggle" class="collapse-toggle">◀</button>
-        </div>
-    </nav>
+        <!-- Уведомления -->
+        <li>
+            <a href="#">
+                <i class='bx bx-bell icon'></i>
+                <span class="link-text">Уведомления</span>
+            </a>
+        </li>
+
+        <!-- Контакты -->
+        <li>
+            <a href="{% url 'contacts' %}">
+                <i class='bx bx-phone icon'></i>
+                <span class="link-text">Контакты</span>
+            </a>
+        </li>
+
+        <!-- Фильтр товаров -->
+        <li>
+            <a href="{% url 'filter_page' %}">
+                <i class='bx bx-filter-alt icon'></i>
+                <span class="link-text">Фильтр товаров</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Управление -->
+    <div class="controls">
+        <button id="theme-toggle" class="theme-toggle"><i class='bx bx-moon'></i></button>
+        <button id="collapse-toggle" class="collapse-toggle"><i class='bx bx-chevron-left'></i></button>
+    </div>
+</nav>
 
     <!-- Основное содержимое -->
     <main class="content">
