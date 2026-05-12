@@ -1,0 +1,30 @@
+<!-- templates/users/email/verification.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+    <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #1a73e8;">Добро пожаловать в ВИКИ, {{ user.username }}!</h2>
+        <p>Спасибо за регистрацию. Остался последний шаг — подтвердите ваш email.</p>
+
+        <p style="text-align: center; margin: 20px 0;">
+            <a href="{{ verification_link }}"
+               style="background: #1a73e8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Подтвердить email
+            </a>
+        </p>
+
+        <p>Если кнопка не работает, скопируйте ссылку:</p>
+        <p style="word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 4px;">
+            {{ verification_link }}
+        </p>
+
+        <hr style="border: 1px solid #eee;">
+        <p style="font-size: 0.9em; color: #777;">
+            Если вы не регистрировались на нашем сайте — просто проигнорируйте это письмо.
+        </p>
+    </div>
+</body>
+</html>

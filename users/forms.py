@@ -20,7 +20,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone')
+        fields = ('username', 'email', 'phone', 'password1', 'password2')
         labels = {
             'username': 'Имя пользователя',
         }
@@ -47,7 +47,7 @@ class RegisterForm(UserCreationForm):
         if hasattr(user, 'profile'):
             user.profile.phone = self.cleaned_data["phone"]
         else:
-            # Если профиль не создан — можно создать здесь или через сигнал
+            # Если профиль не создан — можно создать через сигнал
             pass
         if commit:
             user.save()

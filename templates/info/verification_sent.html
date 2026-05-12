@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Подтвердите email — ВИКИ{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/verification.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="verification-container">
+    <section class="verification-box">
+        <div class="verification-icon">✅</div>
+        <h1 class="verification-title">Проверьте почту</h1>
+
+        <div class="verification-text">
+            <p>
+                Мы отправили письмо на <strong>{{ user.email }}</strong>.
+            </p>
+            <p>
+                Перейдите по ссылке в письме, чтобы подтвердить email и активировать аккаунт.
+            </p>
+            <p>
+                <small>Если письма нет — проверьте папку «Спам».</small>
+            </p>
+        </div>
+
+        <a href="{% url 'users:login' %}" class="btn-secondary">Уже подтвердил(а)</a>
+    </section>
+</main>
+{% endblock %}

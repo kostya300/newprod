@@ -2,15 +2,18 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+
 app_name = 'users'
 
 urlpatterns = [
+
     path('register/', views.UserRegisterView.as_view(), name='register'),
     path('login/', views.UserLoginView.as_view(template_name='store/login.html'), name='login'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('settings/', views.settings_view, name='settings'),
     path('logout/', views.logout_view, name='logout'),
-# 🔐 Сброс пароля
+    path('verify-email/<uuid:token>/', views.verify_email, name='verify_email'),
+    # 🔐 Сброс пароля
     path('password-reset/',
          auth_views.PasswordResetView.as_view(
              template_name='registration/password_reset_form.html',
@@ -38,6 +41,5 @@ urlpatterns = [
              template_name='registration/password_reset_complete.html'
          ),
          name='password_reset_complete'),
-
 
 ]

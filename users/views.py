@@ -1,8 +1,9 @@
 # users/views.py
 from django_ratelimit.decorators import ratelimit
 import requests
+from django.core.mail import send_mail
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -15,11 +16,13 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import FormView
 from django.contrib.auth import logout
 import logging
-
+from .models import EmailVerificationToken
 from django.views import generic
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.urls import reverse
 logger = logging.getLogger(__name__)
 
 
@@ -41,19 +44,60 @@ class UserRegisterView(View):
     def post(self, request):
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(
-                request,
-                f"Добро пожаловать, {user.username}! Вы успешно зарегистрировались."
+            print("✅ Форма валидна")
+            user = form.save(commit=False)
+            user.is_verified = False # Пока не подтверждён
+            user.save()
+            print(f"✅ Пользователь сохранён: {user.email}")
+            # Создаём токен
+            token_obj, created = EmailVerificationToken.objects.get_or_create(user=user)
+            print(f"✅ Токен: {token_obj.token}")
+            token = token_obj.token
+            # Генерируем ссылку
+            current_site = get_current_site(request)
+            verification_link = reverse('users:verify_email',args=[token])
+            full_link = f"http://{current_site.domain}{verification_link}"
+            # HTML-письмо
+            html_message = render_to_string('info/verification.html', {
+                'user': user,
+                'verification_link': full_link,
+            })
+            print("✅ HTML письма сгенерирован")
+            # Отправляем
+            send_mail(
+                subject='Подтвердите ваш email',
+                message='',  # Текстовая версия (если нужно)
+                from_email='noreply@вашсайт.рф',
+                recipient_list=[user.email],
+                fail_silently=False,
+                html_message=html_message,
             )
-            next_page = request.GET.get('next')
-            return redirect(next_page or 'home')
+            print("✅ Письмо отправлено")
+            messages.info(
+                request,
+                "Регистрация успешна! "
+                "Пожалуйста, проверьте вашу почту — мы отправили письмо для подтверждения.",
+                extra_tags="soft"
+            )
+            return render(request, 'info/verification_sent.html', {
+                'user': user
+            })
         else:
+            print("❌ Форма невалидна:", form.errors)
             messages.error(request, "Пожалуйста, исправьте ошибки ниже.")
         return render(request, self.template_name, {'form': form})
-
-
+def verify_email(request, token):
+    token_obj = get_object_or_404(EmailVerificationToken, token=token)
+    user = token_obj.user
+    if user.is_verified:
+        messages.info(request,"Ваш аккаунт уже активирован")
+    else:
+        user.is_verified = True
+        user.save()
+        messages.success(request, "Email успешно подтверждён! Теперь можно войти.")
+    # Удаляем токен после использования
+    token_obj.delete()
+    return redirect('users:login')
 @method_decorator(ratelimit(key='ip', rate='5/m'), name='post') # 5 попыток с IP в минуту
 @method_decorator(ratelimit(key='post:username', rate='3/m'), name='post')
 class UserLoginView(View):

@@ -1,0 +1,98 @@
+/* === Сообщения Django (уведомления) === */
+.form-messages {
+    margin-bottom: 16px;
+    padding: 0;
+}
+
+.alert {
+    font-size: 0.85em;          /* Мелкий шрифт — как вы просили */
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 6px 0;
+    word-wrap: break-word;
+    display: block;
+    line-height: 1.4;
+    border-left: 4px solid #ddd;
+    background: rgba(0, 0, 0, 0.03);
+    color: #555;
+    position: relative;
+}
+
+/* Успешное сообщение */
+.alert.success {
+    background: rgba(0, 170, 102, 0.1);
+    color: #006640;
+    border-left-color: #00aa66;
+}
+
+/* Информационное сообщение */
+.alert.info {
+    background: rgba(110, 142, 251, 0.1);
+    color: #3a5cd6;
+    border-left-color: #6e8efb;
+}
+
+/* Ошибка */
+.alert.error,
+.alert.danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #c02a38;
+    border-left-color: #dc3545;
+}
+
+/* Предупреждение */
+.alert.warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #856404;
+    border-left-color: #ffc107;
+}
+
+/* Иконки (опционально) */
+.alert.success::before {
+    content: "✅";
+    margin-right: 6px;
+}
+
+.alert.info::before {
+    content: "ℹ️";
+    margin-right: 6px;
+}
+
+.alert.error::before,
+.alert.danger::before {
+    content: "❌";
+    margin-right: 6px;
+}
+
+.alert.warning::before {
+    content: "⚠️";
+    margin-right: 6px;
+}
+
+/* Тёмная тема */
+.theme-dark .alert {
+    background: rgba(255, 255, 255, 0.08);
+    color: #cccccc;
+    border-left-color: #666;
+}
+
+.theme-dark .alert.success {
+    color: #66cc99;
+    border-left-color: #00aa66;
+}
+
+.theme-dark .alert.info {
+    color: #8ab4f8;
+    border-left-color: #6e8efb;
+}
+
+.theme-dark .alert.error,
+.theme-dark .alert.danger {
+    color: #ff7878;
+    border-left-color: #dc3545;
+}
+
+.theme-dark .alert.warning {
+    color: #ffd666;
+    border-left-color: #ffc107;
+}

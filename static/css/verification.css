@@ -1,0 +1,114 @@
+/* static/css/verification.css */
+
+/* === Общие стили для страницы подтверждения === */
+.verification-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary, #f8f9fa);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.verification-box {
+    width: 100%;
+    max-width: 500px;
+    background: var(--bg-secondary, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    text-align: center;
+    padding: 40px 30px;
+    border: 1px solid var(--border-color, #e0e0e0);
+}
+
+.verification-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+    color: #00aa66;
+}
+
+.verification-title {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    margin: 0 0 16px 0;
+}
+
+.verification-text {
+    color: var(--text-primary, #555);
+    line-height: 1.6;
+    font-size: 1em;
+    margin: 16px 0;
+}
+
+.verification-text strong {
+    color: var(--accent-color, #6e8efb);
+    font-weight: 600;
+}
+
+.verification-text small {
+    color: #777;
+    font-style: italic;
+}
+
+.btn-secondary {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 12px 28px;
+    background: var(--accent-color, #6e8efb);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1em;
+    transition: background 0.2s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(110, 142, 251, 0.3);
+}
+
+.btn-secondary:hover {
+    background: var(--accent-hover, #5d7efa);
+    transform: translateY(-1px);
+}
+
+/* === Тёмная тема === */
+.theme-dark .verification-container {
+    background: #1a1a1a;
+}
+
+.theme-dark .verification-box {
+    background: #2a2a2a;
+    border-color: #444;
+}
+
+.theme-dark .verification-title,
+.theme-dark .verification-text {
+    color: #f0f0f0;
+}
+
+.theme-dark .verification-text strong {
+    color: #a777e3;
+}
+
+/* === Адаптивность === */
+@media (max-width: 480px) {
+    .verification-container {
+        padding: 16px;
+    }
+
+    .verification-box {
+        padding: 32px 20px;
+        border-radius: 12px;
+    }
+
+    .verification-title {
+        font-size: 1.5em;
+    }
+
+    .verification-icon {
+        font-size: 50px;
+    }
+}

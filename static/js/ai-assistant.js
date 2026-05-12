@@ -67,17 +67,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken'),
             },
-            body: JSON.stringify({ message: text }),
+            body: JSON.stringify({message: text}),
         })
-        .then(response => response.json())
-        .then(data => {
-            messagesDiv.removeChild(typing);
-            appendMessage('<strong>🤖:</strong> ' + data.response, 'ai');
-        })
-        .catch(err => {
-            messagesDiv.removeChild(typing);
-            appendMessage('<strong>🤖:</strong> Ошибка подключения.', 'ai');
-        });
+            .then(response => response.json())
+            .then(data => {
+                messagesDiv.removeChild(typing);
+                appendMessage('<strong>🤖:</strong> ' + data.response, 'ai');
+            })
+            .catch(err => {
+                messagesDiv.removeChild(typing);
+                appendMessage('<strong>🤖:</strong> Ошибка подключения.', 'ai');
+            });
     }
 
     sendBtn.addEventListener('click', sendMessage);
@@ -87,31 +87,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // === Добавление сообщения с поддержкой кода ===
     function appendMessage(text, sender) {
-    const p = document.createElement('p');
+        const p = document.createElement('p');
+        p.classList.add('ai-message', sender);
 
-    // Преобразуем Markdown-подобный текст в HTML
-    let html = text
-        // Заголовки ### → <h5>
-        .replace(/###\s*(.+?)\n/g, '<h5 class="ai-msg-heading">$1</h5>')
-        // Жирный шрифт **текст** → <strong>
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        // Маркированный список - → <ul><li>
-        .replace(/(?:^|\n)-\s+(.+?)(?=\n-|\n\n|$)/g, (match, item) =>
-            `<li>${item}</li>`
-        )
-        // Оборачиваем списки в <ul>
-        .replace(/((<li>.+?<\/li>\s*)+)/g, '<ul class="ai-msg-list">$1</ul>');
+        // Настройка marked.js для подсветки кода
+        marked.setOptions({
+            highlight: function (code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, {language: lang}).value;
+                    } catch (err) {
+                    }
+                }
+                // Для неподдерживаемых языков — просто моноширинный шрифт
+                return code;
+            },
+            langPrefix: 'hljs language-', // нужен для highlight.js
+            sanitize: true, // защита от XSS
+            breaks: true,  // \n → <br>
+            gfm: true      // GitHub Flavored Markdown
+        });
 
-    p.innerHTML = html;
-    messagesDiv.appendChild(p);
+        // Преобразуем текст в безопасный HTML
+        let html = marked.parse(text);
 
-    // Подсветка кода
-    if (p.querySelector('pre code')) {
-        hljs.highlightAll();
+        // Дополнительная защита: экранируем, если marked не сработал
+        p.innerHTML = html;
+
+        messagesDiv.appendChild(p);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+        // Подсвечиваем все <code> блоки
+        p.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
     }
 
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
     // === Экранирование HTML ===
     function escapeHtml(unsafe) {
         return unsafe
