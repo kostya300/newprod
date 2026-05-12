@@ -112,6 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.github.GithubOAuth2',
     'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.yandex.YandexOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -232,8 +233,19 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kostya.barnung@gmail.com'
-EMAIL_HOST_PASSWORD = 'mdxz jspq yelo cajc'  # из Google App Passwords
+EMAIL_HOST_PASSWORD = 'mdxz jspq yelo cajc'
 DEFAULT_FROM_EMAIL = 'kostya.barnung@gmail.com'
+
+# Yandex OAuth2
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = '3adaa4af6dc845229bc521dcd36e7106'
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = '7ab4638d92c344ee9f2648f603f8a899'
+# Опционально: какие данные запрашивать
+SOCIAL_AUTH_YANDEX_OAUTH2_SCOPE = [
+    'login:email',
+    'login:info',
+]
+# Фикс: Яндекс может не возвращать email — принудительно запросим
+SOCIAL_AUTH_YANDEX_OAUTH2_EXTRA_DATA = ['emails']
 
 # Статика
 STATIC_URL = '/static/'

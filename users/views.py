@@ -24,7 +24,17 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.urls import reverse
 logger = logging.getLogger(__name__)
-
+def get_email_from_yandex(backend, details, response, user=None, *args, **kwargs):
+    """
+    Получает email из профиля Яндекса, если он не пришёл.
+    """
+    if backend.name == 'yandex-oauth2':
+        if not details.get('email') and user:
+            # Попробуем получить email из response
+            emails = response.get('emails', [])
+            if emails:
+                details['email'] = emails[0]
+    return {'details': details}
 
 @method_decorator(ratelimit(key='ip', rate='3/m'), name='post')
 @method_decorator(ratelimit(key='post:email', rate='5/m'), name='post')
