@@ -1,8 +1,77 @@
 # store/admin.py
 from django.contrib import admin
-from .models import Category, Product, ProductImage
+from .models import Category, Product, ProductImage,Order, OrderItem
 
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0  # Не показывать пустые строки
+    readonly_fields = ('product', 'name', 'price', 'quantity', 'total_price')
+    can_delete = False
+    verbose_name = 'Товар'
+    verbose_name_plural = 'Товары в заказе'
+# Админка для заказа
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'first_name',
+        'last_name',
+        'total_amount',
+        'status',
+        'delivery_type',
+        'payment_method',
+        'created_at',
+    )
+    list_filter = (
+        'status',
+        'delivery_type',
+        'payment_method',
+        'created_at',
+    )
+    search_fields = (
+        'id',
+        'user__username',
+        'user__email',
+        'first_name',
+        'last_name',
+        'phone',
+        'email',
+    )
+    readonly_fields = (
+        'created_at',
+        'total_amount',
+    )
+    inlines = [OrderItemInline]
+    fieldsets = (
+        ('Пользователь', {
+            'fields': ('user', ('first_name', 'last_name'), 'phone', 'email')
+        }),
+        ('Доставка', {
+            'fields': ('delivery_type', ('city', 'address', 'postal_code'))
+        }),
+        ('Оплата', {
+            'fields': ('payment_method', 'total_amount', 'yookassa_payment_id')
+        }),
+        ('Статус', {
+            'fields': ('status', 'created_at')
+        }),
+        ('Комментарий', {
+            'fields': ('comment',)
+        }),
+    )
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+# Админка для OrderItem (опционально — если хочется отдельно)
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product', 'name', 'quantity', 'price', 'total_price')
+    list_filter = ('order__status', 'product')
+    search_fields = ('name', 'order__id', 'order__user__username')
+    readonly_fields = ('total_price',)
 
+    def has_add_permission(self, request):
+        return False  # Создаётся через Order
 # Inline для изображений товара
 class ProductImageInline(admin.TabularInline):
     model = ProductImage

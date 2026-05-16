@@ -1,17 +1,20 @@
 import re
 from django.views import View
+from newprod import settings
 import requests
 from rest_framework.response import Response
 from django.views.generic import ListView, CreateView
 from django.contrib.admin.templatetags.admin_list import pagination
-from django.core.paginator import Page, Paginator, PageNotAnInteger,EmptyPage
+from django.core.paginator import Page, Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404, redirect
 from flatbuffers.flexbuffers import Object
 from rest_framework.decorators import api_view
 from sympy.integrals.meijerint_doc import category
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Category, Product,Basket
+from yookassa import Configuration, Configuration, Payment
+import uuid
+from .models import Category, Product, Basket, Order, OrderItem
 import base64
 import time
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +25,11 @@ from .utils import get_gigachat_token
 from users.models import User
 from .utils import get_gigachat_token  # ← из utils.py
 from urllib.parse import quote  # ← для quote(user_query), если хотите
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class IndexView(ListView):
     template_name = 'store/index.html'
     context_object_name = 'featured_products'
@@ -66,6 +74,7 @@ class IndexView(ListView):
 
         return context
 
+
 # filter page for desktop
 def filter_page(request):
     categories = Category.objects.all()
@@ -95,6 +104,7 @@ def filter_page(request):
         'current_max_price': max_price or '',
     }
     return render(request, 'store/catalog/filter.html', context)
+
 
 class CatalogView(ListView):
     template_name = 'store/catalog.html'
@@ -137,27 +147,31 @@ class CatalogView(ListView):
         context['categories'] = categories
 
         return context
+
+
 class ProductsListView(ListView):
     model = Product
-    context_object_name='products'
+    context_object_name = 'products'
     template_name = 'store/category/products.html'
     paginate_by = 2
     paginate_orphans = 1
+
     def get_queryset(self):
         """Фильтруем товары по категории и доступности"""
         queryset = Product.objects.filter(in_stock=True)
         category_slug = self.request.GET.get('category')
         if category_slug:
-            category = get_object_or_404(Category,slug=category_slug)
+            category = get_object_or_404(Category, slug=category_slug)
             queryset = queryset.filter(category=category)
         return queryset
-    def get_context_data(self,**kwargs):
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Текущая категория
         category_slug = self.request.GET.get('category')
         context['category'] = None
         if category_slug:
-            context['category'] = get_object_or_404(Category,slug=category_slug)
+            context['category'] = get_object_or_404(Category, slug=category_slug)
         # Все активные категории (для фильтра)
         context['categories'] = Category.objects.filter(is_active=True)
         context['featured_products'] = Product.objects.filter(
@@ -194,6 +208,25 @@ def basket_add(request, product_id):
     # Возвращаемся на ту же страницу
     return redirect(request.META['HTTP_REFERER'])
 
+
+def order_success(request, order_id):
+    """Страница подтверждения заказа"""
+    try:
+        order = Order.objects.get(id=order_id, user=request.user)
+        if order.payment_method == 'card':
+            message = "Ожидайте письмо с подтверждением оплаты."
+        else:  # cash
+            message = "Заказ оформлен! Оплата наличными при получении."
+    except Order.DoesNotExist:
+        order = None
+        message = "Заказ не найден или доступ запрещён."
+
+    return render(request, 'store/order_success.html', {
+        'order_id': order_id,
+        'message': message
+    })
+
+
 # @csrf_exempt
 # @login_required
 # def basket_add(request, product_id):
@@ -222,6 +255,7 @@ def basket_add(request, product_id):
 
 
 GIGACHAT_TOKEN = "eyJjdHkiOiJqd3QiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYWxnIjoiUlNBLU9BRVAtMjU2In0.RLOoO2lvKCrRUFMRTK3AzOADyKM1xHmT0HPqQZ6LWmHIeey2KK8yPyLMNk2IYcr9wx4g1N1dWT-pKVNuBpJ0aRxNJr6F63Q5A21Wz06pwxnEv2F3O4_mjeNfN0ZDXjdX9rL1S8FHZAqD1_frIKyyB26p2BDDego6VADoNWdxIquoVZ1ncss9edkDl9AFxpVrEfcRuOdTp4pW9xUwW4f0vWI1UsASp8KRFJKIuBqqzgHGvnyzXWqJWvt0W9ANHtA_vZ2sTJe7kEKkfEeYW1Tjgp8C0y9freaTEI4UdsFFz_QH3am9ThAW4NMtfpleZW3IodMS4-TUP5SbdGPzEMMUYw.K6b-4aYjkY6zf7jmWtd__g.M-4SWEYdTdAglvDcH2xOCKvE5SRyCA7EBUu35bFpzh-VnArn2Rk5OKRqZeGeLEKiClRrgPAMK-bHbAKo1CmWu9nwRqmCGY--jRHfuzx9sv8ScIc8Kb7F1kpsba_LvfRM9R7088IaxBEcCYGqIZ00R1D0jTfvE0zS5gqjxr1FSy6v27HQNdZT1nLloFpxT_xoyanKi6TQ9TMrL7TCwvkrqw7SFdPsrDORHbiF66Z7kzeI1FJ0NnFAWnblZSNE3Ll8GBNhsuVqiFQntIgEAkawSvpz1juy6M9qkQnhnB8N-hMjPxs6GPpcSyuctbZOKiHN77Pisvi39twXanz25XR9FwNF3DzSPGanzJW9_w2obeA100OAnIjiLGlZbRx_oAZQcBSIygDnAMXMXEiM4ZdkbbLkaZuVMXAtONSrg_pC7869g0ew1De8N__bBeU9xm3RjGEv7MMNT25Rkpzu6M9aA8HxDmw0XOB4CY9dNzW7MMCO4VJCk1vheHhll_Oo3EWInkzMVlyYRM133cOXk0rlQKGjJjA9wsF_QuTnrtEbioLWHfzKaQMM3YAm3FwA-eIBbTfmBWM2-0-6RaKDpnO4KICYmCs0ZWPy2BkLeoYpqm0H_9BMYAtn_Uak7Qukc-hW6OHfgGagh-g-f4fvADiaAXtMCNTTyhPpdwSeISKd9fLcwb0EOkxUgy7QKkuhhjWMLpxle0yLpm5sIYEVBcN5ON8tylVWrXfU3HKN5OCmvQE.btIpUx-8BcdCigEi_N3wxlphzp-Dt2CtnMnnNSqHVjs"
+
 
 # === Страница поиска товаров через ИИ ===
 
@@ -279,6 +313,7 @@ def goods_for_internet(request):
         'products': products,
         'query': query
     })
+
 
 @csrf_exempt  # Разрешаем POST без CSRF (только если вызывается с JS)
 def ai_internet_goods(request):
@@ -413,6 +448,8 @@ def ai_internet_goods(request):
             return JsonResponse({'products': []})
 
     return JsonResponse({'error': 'Only POST'}, status=400)
+
+
 @csrf_exempt
 def ai_chat(request):
     if request.method == 'POST':
@@ -463,9 +500,6 @@ def ai_chat(request):
     return JsonResponse({'error': 'Only POST'}, status=400)
 
 
-
-
-
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     gallery_images = product.images.all()
@@ -477,18 +511,193 @@ def product_detail(request, slug):
         'main_image': main_image,
     })
 
+
+@login_required
+def order_history(request):
+    """Отображает историю заказов пользователя"""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'store/history_orders.html', {'orders': orders})
+
+
 def order_view(request):
-    # Можно передать данные из корзины, если нужно
+    print("🔹 Пользователь:", request.user)
+    print("🔹 Аутентифицирован:", request.user.is_authenticated)
+    """Отображает страницу оформления заказа"""
     return render(request, 'store/includes/ordersection.html')
+
+
+@login_required
+def about_order(request, order_id):
+    """Страница деталей заказа"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    # Получаем реальные товары из OrderItem
+    order_items = []
+    for item in order.items.all():  # related_name='items'
+        order_items.append({
+            'name': item.name,
+            'price': item.price,
+            'quantity': item.quantity,
+            'total_price': item.total_price,
+            'image': item.product.image.url if item.product.image else '/static/images/no-image.png'
+        })
+    return render(request, 'store/about_order.html', {
+        'order': order,
+        'order_items': order_items
+    })
+
+
+# Настройка YooKassa
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+Configuration.account_id = settings.YOOKASSA_SHOP_ID
+Configuration.secret_key = settings.YOOKASSA_SECRET_KEY
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_order(request):
+    """API: создаёт заказ и платёж в YooKassa"""
+    user = request.user
+    data = request.data
+
+    # Проверка авторизации
+    if not user.is_authenticated:
+        return Response({"error": "Требуется вход"}, status=401)
+
+    # Сумма из корзины
+    cart_items = Basket.objects.filter(user=user).select_related('product')
+    total_amount = sum(item.total_price for item in cart_items)
+    if total_amount <= 0:
+        return Response({"error": "Корзина пуста"}, status=400)
+
+    # Создаём заказ
+    order = Order.objects.create(
+        user=user,
+        first_name=data.get('first_name'),
+        last_name=data.get('last_name'),
+        phone=data.get('phone'),
+        email=data.get('email'),
+        delivery_type=data.get('delivery_type'),
+        city=data.get('city'),
+        address=data.get('address'),
+        postal_code=data.get('postal_code'),
+        payment_method=data.get('payment_method'),
+        comment=data.get('comment', ''),
+        total_amount=total_amount,
+        status='created'
+    )
+    # Сохраняем товары из корзины в OrderItem
+    order_items = []
+    for item in cart_items:
+        order_item = OrderItem(
+            order=order,
+            product=item.product,
+            name=item.product.name,
+            price=item.product.price,
+            quantity=item.quantity,
+            total_price=item.total_price
+        )
+        order_items.append(order_item)
+    # Массовое создание — быстрее
+    OrderItem.objects.bulk_create(order_items)
+    # Удаление товаров
+    cart_items.delete()
+    if data.get('payment_method') == 'card':
+        # Создаём платёж в YooKassa
+        try:
+            payment = Payment.create({
+                "amount": {
+                    "value": f"{total_amount:.2f}",
+                    "currency": "RUB"
+                },
+                "confirmation": {
+                    "type": "redirect",
+                    "return_url": "http://127.0.0.1:8000/cart/"
+                },
+                "capture": True,
+                "description": f"Заказ №{order.id}",
+                "metadata": {
+                    "order_id": order.id
+                }
+            })
+
+            order.yookassa_payment_id = payment.id
+            order.status = payment.status
+            order.save()
+
+            return Response({
+                "success": True,
+                "payment_url": payment.confirmation.confirmation_url
+            })
+
+        except Exception as e:
+            print("YooKassa error:", str(e))
+            logger.error(f"YooKassa error: {str(e)}")
+            order.status = 'cancelled'
+            order.save()
+            return Response({"error": "Ошибка при создании платежа"}, status=500)
+
+    elif data.get('payment_method') == 'cash':
+        order.status = 'created'
+        order.save()
+        Basket.objects.filter(user=user).delete()
+        # Можно отправить email, уведомление в Telegram и т.д.
+        return Response({
+            "success": True,
+            "redirect_url": f"/order/success/{order.id}/",
+            "message": "Заказ оформлен! Оплата наличными при получении.",
+            "order_id": order.id
+        })
+
+    else:
+        return Response({"error": "Неверный способ оплаты"}, status=400)
+
+
+@csrf_exempt
+def yookassa_webhook(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            event = data.get('event')
+
+            if event == 'payment.succeeded':
+                payment = data['object']
+                payment_id = payment['id']
+                metadata = payment['metadata']
+                order_id = metadata.get('order_id')
+
+                try:
+                    order = Order.objects.get(yookassa_payment_id=payment_id)
+                    order.status = 'succeeded'
+                    order.save()
+
+                    # ✅ Очищаем корзину пользователя
+                    Basket.objects.filter(user=order.user).delete()
+                    logger.info(f"Корзина очищена для пользователя {order.user} после оплаты заказа {order.id}")
+
+                except Order.DoesNotExist:
+                    logger.warning(f"Order not found for payment_id: {payment_id}")
+
+            return HttpResponse(status=200)
+        except Exception as e:
+            logger.error(f"Webhook error: {str(e)}")
+            return HttpResponse(status=400)
+    return HttpResponse(status=400)
+
 
 def my_favorites(request):
     # Здесь логика для страницы "Избранное"
     return render(request, 'store/category/myfavorite.html')
 
+
 def radio(request):
-    return render(request,'info/radio.html')
+    return render(request, 'info/radio.html')
+
+
 def currency(request):
-    return render(request,'info/currency.html')
+    return render(request, 'info/currency.html')
 
 
 @login_required
@@ -503,21 +712,22 @@ def cart(request):
         'cart_items': cart_items,
         'cart_total': cart_total
     })
+
+
 @api_view(['GET'])
 def cart_api(request):
     cart_items = Basket.objects.filter(user=request.user)
-    serializer = CartItemSerializer(cart_items,many=True)
+    serializer = CartItemSerializer(cart_items, many=True)
     return Response(serializer.data)
-@api_view(['POST'])
-def create_order(request):
-    data = request.data
-    return Response({"success": True, "message": "Заказ оформлен!"})
+
+
 @login_required
 def basket_add_one(request, item_id):
     item = get_object_or_404(Basket, id=item_id, user=request.user)
     item.quantity += 1
     item.save()
     return redirect('cart')  # Возвращаемся в корзину
+
 
 @login_required
 def basket_remove_one(request, item_id):
@@ -529,11 +739,13 @@ def basket_remove_one(request, item_id):
         item.delete()
     return redirect('cart')
 
+
 @login_required
 def basket_remove(request, item_id):
     item = get_object_or_404(Basket, id=item_id, user=request.user)
     item.delete()
     return redirect('cart')
+
 
 def contacts(request):
     return render(request, 'store/contacts.html')

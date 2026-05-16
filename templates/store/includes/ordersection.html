@@ -16,7 +16,6 @@
     <section class="order-container">
         <form method="post" id="order-form">
             {% csrf_token %}
-
             <div class="form-group">
                 <label for="first_name">Имя</label>
                 <input type="text" name="first_name" id="first_name" placeholder="Иван" required>
@@ -41,7 +40,8 @@
                 <label>Способ получения</label>
                 <div class="radio-group">
                     <label class="radio-option">
-                        <input type="radio" name="delivery_type" value="pickup" checked onchange="toggleDeliveryFields()">
+                        <input type="radio" name="delivery_type" value="pickup" checked
+                               onchange="toggleDeliveryFields()">
                         Самовывоз
                     </label>
                     <label class="radio-option">
@@ -115,6 +115,69 @@
     </section>
 
     <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.getElementById('order-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            const csrftoken = getCookie('csrftoken');
+            if (!csrftoken) {
+                console.error('❌ CSRF token не найден в куках!');
+                alert('Ошибка: CSRF token отсутствует. Попробуйте перезагрузить страницу.');
+                return;
+            }
+
+            console.log('✅ CSRF token найден:', csrftoken.substring(0, 10) + '...');
+
+            fetch('/api/order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,  // ✅ Обязательно
+                },
+                body: JSON.stringify(data),
+                credentials: 'same-origin'  // ✅ Обязательно — иначе куки не отправятся
+            })
+                .then(response => {
+                    console.log('➡️ Статус ответа:', response.status, response.statusText);
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.error('❌ Тело ошибки:', text);
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.payment_url) {
+                        // Онлайн-оплата
+                        window.location.href = result.payment_url;
+                    } else if (result.redirect_url) {
+                        // Наличные → страница успеха
+                        window.location.href = result.redirect_url;
+                    } else {
+                        alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+                    }
+                })
+        });
+
+        // Остальные функции — без изменений
         function toggleDeliveryFields() {
             const deliveryType = document.querySelector('input[name="delivery_type"]:checked').value;
             document.getElementById('delivery-fields').style.display = deliveryType === 'courier' ? 'block' : 'none';

@@ -1,7 +1,7 @@
 from django.db import models
 
 from users.models import User
-
+from django.contrib.auth import get_user_model
 
 class Category(models.Model):
     name = models.CharField('Название', max_length=100, unique=True)
@@ -88,6 +88,74 @@ class PriceComparison(models.Model):
 
     def __str__(self):
         return f"{self.get_marketplace_display()} — {self.price} ₽"
+
+User = get_user_model()
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('created', 'Создан'),
+        ('pending', 'Ожидает оплаты'),
+        ('succeeded', 'Оплачен'),
+        ('cancelled', 'Отменён'),
+    ]
+
+    DELIVERY_CHOICES = [
+        ('pickup', 'Самовывоз'),
+        ('courier', 'Доставка курьером'),
+    ]
+
+    PAYMENT_CHOICES = [
+        ('cash', 'Наличными при получении'),
+        ('card', 'Онлайн-оплата картой'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    delivery_type = models.CharField(max_length=10,choices=DELIVERY_CHOICES)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
+    payment_method = models.CharField(max_length=10,choices=PAYMENT_CHOICES)
+    comment = models.TextField(blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    yookassa_payment_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    status = models.CharField(max_length=20,choices=STATUS_CHOICES, default='created')  # created, pending, succeeded, cancelled
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Заказ {self.id} — {self.get_status_display()}"
+
+    def get_payment_url(self):
+        if self.yookassa_payment_id and self.status != 'succeeded':
+            return f"https://yookassa.ru/my/payments/{self.yookassa_payment_id}"
+        return None
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        Order,
+        related_name='items',
+        on_delete=models.CASCADE,
+        verbose_name='Заказ'
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Товар'
+    )
+    name = models.CharField('Название', max_length=255)
+    price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField('Количество', default=1)
+    total_price = models.DecimalField('Общая стоимость', max_digits=10, decimal_places=2)
+    class Meta:
+        verbose_name = 'Товар в заказе'
+        verbose_name_plural = 'Товары в заказе'
+    def __str__(self):
+        return f"{self.quantity} × {self.name} в заказе {self.order.id}"
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.price * self.quantity
+        super().save(*args,** kwargs)
 
 class Basket(models.Model):
     user = models.ForeignKey(

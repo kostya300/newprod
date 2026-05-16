@@ -36,7 +36,7 @@
         <section class="profile-stats">
             <div class="stat-card">
                 <h3>Заказы</h3>
-                <p class="stat-number">14</p>
+                <p class="stat-number">{{ order_count }}</p>
             </div>
             <div class="stat-card">
                 <h3>Баллы</h3>
@@ -49,7 +49,7 @@
         </section>
 
         <section class="profile-actions">
-            <button class="action-btn">История заказов</button>
+            <button class="action-btn" onclick="window.location='{% url 'order_history' %}'">История заказов</button>
             <button class="action-btn" onclick="window.location='{% url 'users:settings' %}'">Настройки</button>
             <button class="action-btn" onclick="window.location='{% url 'users:logout' %}'">Выход</button>
         </section>

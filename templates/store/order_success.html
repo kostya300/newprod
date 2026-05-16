@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Заказ оформлен — ВИКИ{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/order_success.css' %}">
+{% endblock %}
+{% block content %}
+    <section class="hero">
+        <h1><span class="gradient-text">СПАСИБО ЗА ЗАКАЗ!</span></h1>
+    </section>
+
+    <section class="order-success-container">
+        <div class="success-card">
+            <svg class="success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <h2>Ваш заказ оформлен</h2>
+            <p>Номер заказа: <strong>№{{ order_id }}</strong></p>
+            <p>{{ message }}</p>
+            <div class="success-actions">
+                <a href="{% url 'catalog' %}" class="btn btn-primary">Продолжить покупки</a>
+                <a href="{% url 'cart' %}" class="btn btn-outline">Моя корзина</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}

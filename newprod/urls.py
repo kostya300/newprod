@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from store import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +28,11 @@ urlpatterns = [
     path('', include("store.urls")),
     path('oauth/', include('social_django.urls', namespace='social')),
     path('api/', include('newprod.api.urls')),
+    path('order/success/<int:order_id>/', views.order_success, name='order_success'),
+    path('orders/history/', views.order_history, name='order_history'),
+    path('api/order/', views.create_order, name='create_order'),
+    path('api/yookassa-webhook/', views.yookassa_webhook, name='yookassa_webhook'),
+    path('orders/<int:order_id>/', views.about_order, name='about_order'),
 
 ]
 # Подключение медиа-файлов только в режиме DEBUG

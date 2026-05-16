@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Заказ №{{ order.id }} — ВИКИ{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/about_order.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="about-order-container">
+        <section class="hero">
+            <h1><span class="gradient-text">ЗАКАЗ №{{ order.id }}</span></h1>
+        </section>
+
+        <div class="order-summary">
+            <div class="summary-item">
+                <strong>Дата:</strong>
+                <span>{{ order.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            <div class="summary-item">
+                <strong>Статус:</strong>
+                <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+            </div>
+            <div class="summary-item">
+                <strong>Способ получения:</strong>
+                <span>{{ order.get_delivery_type_display }}</span>
+            </div>
+            <div class="summary-item">
+                <strong>Оплата:</strong>
+                <span>{{ order.get_payment_method_display }}</span>
+            </div>
+            <div class="summary-item">
+                <strong>Итого:</strong>
+                <span class="total-amount">{{ order.total_amount }} ₽</span>
+            </div>
+        </div>
+
+        <!-- Адрес доставки -->
+        {% if order.address %}
+            <section class="delivery-info">
+                <h3>Адрес доставки</h3>
+                <p>{{ order.address }}</p>
+                {% if order.city %}<p><strong>Город:</strong> {{ order.city }}</p>{% endif %}
+                {% if order.postal_code %}<p><strong>Почтовый индекс:</strong> {{ order.postal_code }}</p>{% endif %}
+            </section>
+        {% endif %}
+
+        <!-- Товары в заказе -->
+        <section class="order-items">
+            <h3>Товары в заказе</h3>
+            <div class="items-list">
+                {% for item in order_items %}
+                    <div class="item-card">
+                        <img src="{{ item.image }}" alt="{{ item.name }}">
+                        <div class="item-details">
+                            <h4>{{ item.name }}</h4>
+                            <p>Цена: {{ item.price }} ₽</p>
+                            <p>Количество: {{ item.quantity }}</p>
+                        </div>
+                        <div class="item-total">
+                            <strong>{{ item.total_price }} ₽</strong>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>В заказе нет товаров.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Комментарий -->
+        {% if order.comment %}
+            <section class="comment-section">
+                <h3>Комментарий к заказу</h3>
+                <p>{{ order.comment }}</p>
+            </section>
+        {% endif %}
+
+        <!-- Действия -->
+        <div class="order-actions">
+            <a href="{% url 'order_history' %}" class="btn btn-outline">Назад к истории</a>
+            {% if order.yookassa_payment_id and order.payment_method == 'card' and order.status != 'succeeded' %}
+                <a href="{{ order.get_payment_url }}" class="btn btn-primary">Доплатить</a>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}

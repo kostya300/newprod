@@ -177,9 +177,10 @@ CELERY_BEAT_SCHEDULE = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # ← JWT вместо сессий
-        # 'rest_framework.authentication.SessionAuthentication',  # можно оставить для браузера
+        'rest_framework.authentication.SessionAuthentication',  # можно оставить для браузера
     ],
     'DEFAULT_PERMISSION_CLASSES': [
+
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -246,10 +247,9 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # youkassa
-YOOKASSA_SHOP_ID = '1360170'
-YOOKASSA_SECRET_KEY = 'test_HjKUY6Ta8-AP0vV6DlM_LXCcKvu0gReVxwXCMyBLuxc'
+YOOKASSA_SHOP_ID = '1360176'
+YOOKASSA_SECRET_KEY = 'test_OXqW6YvD6mRvx6CR2zOQ0XVjoyz-UCnZGrAE9m3zp-M'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # social auth configs for github

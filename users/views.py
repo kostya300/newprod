@@ -17,6 +17,7 @@ from django.views.generic import FormView
 from django.contrib.auth import logout
 import logging
 from .models import EmailVerificationToken
+from store.models import Order
 from django.views import generic
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -139,6 +140,8 @@ class ProfileView(LoginRequiredMixin, View):
     login_url = '/users/login/'
     def get(self, request):
         user = request.user
+
+        order_count = Order.objects.filter(user=user).count()
         # === Определяем город по IP ===
         try:
             ip_response = requests.get('http://ip-api.com/json/?fields=city', timeout=5)
@@ -150,6 +153,7 @@ class ProfileView(LoginRequiredMixin, View):
         context = {
             'user': user,
             'city': city,
+            'order_count':order_count
             # 'weather' — временно убрано
         }
         return render(request, self.template_name, context)

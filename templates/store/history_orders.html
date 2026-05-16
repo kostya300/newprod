@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}История заказов — ВИКИ{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/history_orders.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="orders-container">
+        <section class="hero">
+            <h1><span class="gradient-text">МОЯ ИСТОРИЯ ЗАКАЗОВ</span></h1>
+        </section>
+
+        {% if orders %}
+            <div class="orders-list">
+                {% for order in orders %}
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number">Заказ №{{ order.id }}</span>
+                            <span class="order-date">{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+
+                        <div class="order-info">
+                            <div class="order-status status-{{ order.status }}">
+                                {{ order.get_status_display }}
+                            </div>
+                            <div class="order-total">{{ order.total_amount }} ₽</div>
+                        </div>
+
+                        <div class="order-details">
+                            <p><strong>Способ получения:</strong> {{ order.get_delivery_type_display }}</p>
+                            {% if order.address %}
+                                <p><strong>Адрес:</strong> {{ order.address }}</p>
+                            {% endif %}
+                            <p><strong>Оплата:</strong> {{ order.get_payment_method_display }}</p>
+                            <p><strong>Статус:</strong> {{ order.get_status_display }}</p>
+                        </div>
+                        <div class="order-actions">
+                            <!-- Кнопка "Подробнее" — для всех заказов -->
+                            <a href="{% url 'about_order' order.id %}" class="btn btn-outline">Подробнее</a>
+                            {% if order.yookassa_payment_id and order.payment_method == 'card' and order.status != 'succeeded' %}
+                                <a href="{{ order.get_payment_url }}" class="btn btn-primary">Доплатить</a>
+                            {% elif order.payment_method == 'card' and order.status != 'succeeded' %}
+                                <p class="payment-info">
+                                    ⚠️ Срок оплаты истёк. Свяжитесь с поддержкой.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-orders">
+                <p>У вас пока нет заказов.</p>
+                <a href="{% url 'catalog' %}" class="btn btn-primary">Перейти в каталог</a>
+            </div>
+        {% endif %}
+    </main>
+{% endblock %}
