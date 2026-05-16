@@ -58,20 +58,13 @@
                     </div>
                 {% endfor %}
             </div>
-
-            <!-- Блок доставки -->
-            <section class="checkout-section">
-                <h2>Оформление заказа</h2>
-                {% include "store/includes/ordersection.html" %}
-            </section>
-
             <!-- Итог -->
             <div class="cart-summary" id="cart-summary">
                 <div class="total">
                     <strong>Итого:</strong>
                     <span>{{ cart_total|floatformat:0 }} ₽</span>
                 </div>
-                <button class="checkout-btn">Оплатить</button>
+                <a href="{% url 'order' %}" class="checkout-btn">Оплатить</a>
             </div>
         {% else %}
             <div class="empty-cart" id="empty-cart">

@@ -1,36 +1,152 @@
-<div class="delivery-options">
-    <h3>Способ доставки</h3>
-    <label class="radio-label">
-        <input type="radio" name="delivery" value="courier" checked>
-        Курьером (1-2 дня) — 300 ₽
-    </label>
-    <label class="radio-label">
-        <input type="radio" name="delivery" value="pickup">
-        Самовывоз из магазина — бесплатно
-    </label>
-    <label class="radio-label">
-        <input type="radio" name="delivery" value="post">
-        Почта России (5-7 дней) — 200 ₽
-    </label>
-</div>
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Оформление заказа — ВИКИ{% endblock %}
 
-<div class="customer-info">
-    <h3>Данные получателя</h3>
-    <div class="form-group">
-        <label for="fullname">ФИО</label>
-        <input type="text" id="fullname" placeholder="Иван Иванов" required>
-    </div>
-    <div class="form-group">
-        <label for="phone">Телефон</label>
-        <input type="tel" id="phone" placeholder="+7 (999) 123-45-67" required>
-    </div>
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="example@domain.com" required>
-    </div>
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/order.css' %}">
+{% endblock %}
 
-    <div class="form-group address-field">
-        <label for="address">Адрес доставки</label>
-        <input type="text" id="address" placeholder="г. Москва, ул. Ленина, д. 1, кв. 10">
-    </div>
-</div>
+{% block content %}
+    {% include "store/includes/header.html" %}
+
+    <section class="hero">
+        <h1><span class="gradient-text">ОФОРМЛЕНИЕ ЗАКАЗА</span></h1>
+    </section>
+
+    <section class="order-container">
+        <form method="post" id="order-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="first_name">Имя</label>
+                <input type="text" name="first_name" id="first_name" placeholder="Иван" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Фамилия</label>
+                <input type="text" name="last_name" id="last_name" placeholder="Иванов" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" name="phone" id="phone" placeholder="+7 (999) 123-45-67" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" placeholder="ivan@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Способ получения</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="delivery_type" value="pickup" checked onchange="toggleDeliveryFields()">
+                        Самовывоз
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="delivery_type" value="courier" onchange="toggleDeliveryFields()">
+                        Доставка курьером
+                    </label>
+                </div>
+            </div>
+
+            <!-- Поля доставки -->
+            <div id="delivery-fields" class="delivery-fields">
+                <div class="form-group">
+                    <label for="city">Город</label>
+                    <input type="text" name="city" id="city" placeholder="Москва">
+                </div>
+                <div class="form-group">
+                    <label for="address">Адрес</label>
+                    <input type="text" name="address" id="address" placeholder="ул. Ленина, д. 10, кв. 5">
+                </div>
+                <div class="form-group">
+                    <label for="postal_code">Почтовый индекс</label>
+                    <input type="text" name="postal_code" id="postal_code" placeholder="123456">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="payment_method">Способ оплаты</label>
+                <select name="payment_method" id="payment_method" required onchange="toggleCardFields()">
+                    <option value="">Выберите способ оплаты</option>
+                    <option value="cash">Наличными при получении</option>
+                    <option value="card">Онлайн-оплата картой</option>
+                </select>
+            </div>
+
+            <!-- Поля карты -->
+            <div id="card-fields" class="card-fields">
+                <div class="form-group">
+                    <label for="card_number">Номер карты</label>
+                    <input type="text" name="card_number" id="card_number"
+                           placeholder="1234 5678 9012 3456" maxlength="19"
+                           oninput="formatCardNumber(this)">
+                </div>
+                <div class="form-group">
+                    <label for="card_expiry">Срок действия</label>
+                    <input type="text" name="card_expiry" id="card_expiry"
+                           placeholder="ММ/ГГ" maxlength="5"
+                           oninput="formatExpiry(this)">
+                </div>
+                <div class="form-group">
+                    <label for="card_cvv">CVV</label>
+                    <input type="text" name="card_cvv" id="card_cvv"
+                           placeholder="123" maxlength="3">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="comment">Комментарий к заказу</label>
+                <textarea name="comment" id="comment" rows="3"
+                          placeholder="Особые пожелания..."></textarea>
+            </div>
+
+            <div class="agree-box">
+                <label>
+                    <input type="checkbox" name="agree" required>
+                    Я согласен с <a href="/rules/" target="_blank">правилами оформления заказа</a>
+                </label>
+            </div>
+
+            <button type="submit" class="checkout-btn">Подтвердить заказ</button>
+        </form>
+    </section>
+
+    <script>
+        function toggleDeliveryFields() {
+            const deliveryType = document.querySelector('input[name="delivery_type"]:checked').value;
+            document.getElementById('delivery-fields').style.display = deliveryType === 'courier' ? 'block' : 'none';
+        }
+
+        function toggleCardFields() {
+            const paymentMethod = document.querySelector('#payment_method').value;
+            document.getElementById('card-fields').style.display = paymentMethod === 'card' ? 'grid' : 'none';
+        }
+
+        function formatCardNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            let formatted = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) formatted += ' ';
+                formatted += value[i];
+            }
+            input.value = formatted.trim();
+        }
+
+        function formatExpiry(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                input.value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            } else {
+                input.value = value;
+            }
+        }
+
+        window.onload = () => {
+            toggleDeliveryFields();
+            toggleCardFields();
+        };
+    </script>
+{% endblock %}

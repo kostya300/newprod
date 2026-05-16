@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from .models import User
+from .tasks import send_email_verification
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
@@ -44,13 +45,12 @@ class RegisterForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
-        if hasattr(user, 'profile'):
-            user.profile.phone = self.cleaned_data["phone"]
-        else:
-            # Если профиль не создан — можно создать через сигнал
-            pass
+        user.phone = self.cleaned_data["phone"]
+        user.is_verified = False
+
         if commit:
             user.save()
+            send_email_verification.delay(user.id)
         return user
 
 

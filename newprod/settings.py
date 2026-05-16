@@ -37,13 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',  # ← Добавьте это ПЕРЕД вашими приложениями
+    'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
     'store.apps.StoreConfig',
     'users.apps.UsersConfig',
     'django_dump_load_utf8',
     'social_django',
+    'django_vite',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'newprod.urls'
@@ -115,7 +117,15 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.yandex.YandexOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
-
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": True,
+        "dev_server_protocol": "http",
+        "dev_server_host": "localhost",
+        "dev_server_port": 5173,
+        "static_url_prefix": "react",
+    }
+}
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -137,16 +147,33 @@ LOGGING = {
         },
     },
 }
-
+INTERNAL_IPS = ['127.0.0.1', 'localhost']
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://127.0.0.1:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+            'CONNECTION_POOL_KWARGS': {'max_connections': 50},
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+        },
+        'KEY_PREFIX': 'newprod',
     }
 }
+# Добавь fallback: если Redis упал — использовать локальный кеш
+DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
+DJANGO_REDIS_IGNORE_EXCEPTIONS = True
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_BEAT_SCHEDULE = {
+    'update-price-comparison-daily': {
+        'task': 'store.tasks.task_update_all_price_comparisons',
+        'schedule': 60 * 60 * 24,
+    },
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # ← JWT вместо сессий
@@ -219,6 +246,10 @@ USE_I18N = True
 
 USE_TZ = True
 
+
+# youkassa
+YOOKASSA_SHOP_ID = '1360170'
+YOOKASSA_SECRET_KEY = 'test_HjKUY6Ta8-AP0vV6DlM_LXCcKvu0gReVxwXCMyBLuxc'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # social auth configs for github

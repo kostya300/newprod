@@ -1,11 +1,13 @@
 import re
 from django.views import View
 import requests
+from rest_framework.response import Response
 from django.views.generic import ListView, CreateView
 from django.contrib.admin.templatetags.admin_list import pagination
 from django.core.paginator import Page, Paginator, PageNotAnInteger,EmptyPage
 from django.shortcuts import render, get_object_or_404, redirect
 from flatbuffers.flexbuffers import Object
+from rest_framework.decorators import api_view
 from sympy.integrals.meijerint_doc import category
 from django.http import JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -15,6 +17,7 @@ import time
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import json
+from .serializers import CartItemSerializer
 from .utils import get_gigachat_token
 from users.models import User
 from .utils import get_gigachat_token  # ← из utils.py
@@ -466,11 +469,17 @@ def ai_chat(request):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     gallery_images = product.images.all()
-    main_image = product.image.url if product.image.url else None
-    return render(request, 'store/category/cartoffthings.html',
-                  {'product': product, 'gallery_images': gallery_images, 'main_image': main_image}
-                  )
+    main_image = product.image.url if product.image else '/static/images/no-image.png'
 
+    return render(request, 'store/category/cartoffthings.html', {
+        'product': product,
+        'gallery_images': gallery_images,
+        'main_image': main_image,
+    })
+
+def order_view(request):
+    # Можно передать данные из корзины, если нужно
+    return render(request, 'store/includes/ordersection.html')
 
 def my_favorites(request):
     # Здесь логика для страницы "Избранное"
@@ -480,6 +489,8 @@ def radio(request):
     return render(request,'info/radio.html')
 def currency(request):
     return render(request,'info/currency.html')
+
+
 @login_required
 def cart(request):
     # Только для текущего пользователя!
@@ -492,6 +503,15 @@ def cart(request):
         'cart_items': cart_items,
         'cart_total': cart_total
     })
+@api_view(['GET'])
+def cart_api(request):
+    cart_items = Basket.objects.filter(user=request.user)
+    serializer = CartItemSerializer(cart_items,many=True)
+    return Response(serializer.data)
+@api_view(['POST'])
+def create_order(request):
+    data = request.data
+    return Response({"success": True, "message": "Заказ оформлен!"})
 @login_required
 def basket_add_one(request, item_id):
     item = get_object_or_404(Basket, id=item_id, user=request.user)

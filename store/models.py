@@ -62,6 +62,33 @@ class Product(models.Model):
             return round((1 - self.price / self.old_price) * 100)
         return 0
 
+
+class PriceComparison(models.Model):
+    MARKETPLACES = (
+        ('books_to_scrape', 'BooksToScrape'),
+        ('google_books', 'Google Книги'),
+    )
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='price_competitors')
+    marketplace = models.CharField(max_length=20, choices=MARKETPLACES)
+    price = models.PositiveIntegerField(verbose_name="Цена")
+    url = models.URLField(verbose_name="Ссылка")
+
+    # 🔽 Новые поля
+    title = models.CharField(max_length=200, blank=True, verbose_name="Название книги")
+    image = models.URLField(blank=True, verbose_name="Обложка")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'marketplace')
+        verbose_name = "Цена у конкурента"
+        verbose_name_plural = "Цены у конкурентов"
+
+    def __str__(self):
+        return f"{self.get_marketplace_display()} — {self.price} ₽"
+
 class Basket(models.Model):
     user = models.ForeignKey(
         User,

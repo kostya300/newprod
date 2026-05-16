@@ -23,6 +23,7 @@ from django.core.files.base import ContentFile
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.urls import reverse
+from .tasks import send_email_verification
 logger = logging.getLogger(__name__)
 def get_email_from_yandex(backend, details, response, user=None, *args, **kwargs):
     """
@@ -40,7 +41,6 @@ def get_email_from_yandex(backend, details, response, user=None, *args, **kwargs
 @method_decorator(ratelimit(key='post:email', rate='5/m'), name='post')
 class UserRegisterView(View):
     template_name = 'store/register.html'
-    success_url = reverse_lazy('users:login')
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -54,44 +54,29 @@ class UserRegisterView(View):
     def post(self, request):
         form = RegisterForm(request.POST)
         if form.is_valid():
-            print("✅ Форма валидна")
             user = form.save(commit=False)
-            user.is_verified = False # Пока не подтверждён
+            user.is_verified = False
             user.save()
             print(f"✅ Пользователь сохранён: {user.email}")
+
             # Создаём токен
             token_obj, created = EmailVerificationToken.objects.get_or_create(user=user)
             print(f"✅ Токен: {token_obj.token}")
-            token = token_obj.token
-            # Генерируем ссылку
+
+            # Получаем домен
             current_site = get_current_site(request)
-            verification_link = reverse('users:verify_email',args=[token])
-            full_link = f"http://{current_site.domain}{verification_link}"
-            # HTML-письмо
-            html_message = render_to_string('info/verification.html', {
-                'user': user,
-                'verification_link': full_link,
-            })
-            print("✅ HTML письма сгенерирован")
-            # Отправляем
-            send_mail(
-                subject='Подтвердите ваш email',
-                message='',  # Текстовая версия (если нужно)
-                from_email='noreply@вашсайт.рф',
-                recipient_list=[user.email],
-                fail_silently=False,
-                html_message=html_message,
-            )
-            print("✅ Письмо отправлено")
+
+            # Запускаем Celery-задачу в фоне
+            send_email_verification.delay(user.id, current_site.domain)
+            print("✅ Задача отправки email поставлена в очередь")
+
             messages.info(
                 request,
                 "Регистрация успешна! "
                 "Пожалуйста, проверьте вашу почту — мы отправили письмо для подтверждения.",
                 extra_tags="soft"
             )
-            return render(request, 'info/verification_sent.html', {
-                'user': user
-            })
+            return render(request, 'info/verification_sent.html', {'user': user})
         else:
             print("❌ Форма невалидна:", form.errors)
             messages.error(request, "Пожалуйста, исправьте ошибки ниже.")
