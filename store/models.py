@@ -61,8 +61,39 @@ class Product(models.Model):
         if self.old_price and self.old_price > self.price:
             return round((1 - self.price / self.old_price) * 100)
         return 0
-
-
+class Review(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    rating = models.PositiveIntegerField(
+        'Оценка',
+        choices=[(i, str(i)) for i in range(1, 6)]
+    )
+    text = models.TextField('Отзыв', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField('Опубликован', default=True)
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        ordering = ['-created_at']
+    def __str__(self):
+        return f"{self.user.username} — {self.product.name} — {self.rating}★"
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorites')
+    added_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'product')  # Нельзя добавить дважды
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
 class PriceComparison(models.Model):
     MARKETPLACES = (
         ('books_to_scrape', 'BooksToScrape'),
@@ -74,7 +105,7 @@ class PriceComparison(models.Model):
     price = models.PositiveIntegerField(verbose_name="Цена")
     url = models.URLField(verbose_name="Ссылка")
 
-    # 🔽 Новые поля
+
     title = models.CharField(max_length=200, blank=True, verbose_name="Название книги")
     image = models.URLField(blank=True, verbose_name="Обложка")
 

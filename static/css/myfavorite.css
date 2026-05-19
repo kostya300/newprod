@@ -18,9 +18,7 @@
 }
 
 .favorites-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Две колонки на ПК */
-    gap: 24px;
+
     margin-top: 20px;
 }
 
@@ -67,9 +65,7 @@
 }
 
 .remove-fav {
-    position: absolute;
-    top: 12px;
-    right: 12px;
+
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--border-color);
     width: 30px;

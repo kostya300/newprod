@@ -1,4 +1,12 @@
-<form class="search-form-full" action="{% url 'catalog' %}" method="get">
-    <input type="text" name="q" placeholder="Поиск товаров..." class="search-input">
-    <button type="submit" class="search-btn">🔍</button>
+<!-- templates/store/includes/search-form.html -->
+<form method="get" action="{% url 'product_search'  %}" class="search-form">
+    <input
+        type="text"
+        name="q"
+        placeholder="Введите название товара..."
+        class="search-input"
+        autocomplete="off"
+        autofocus
+    >
+    <button type="submit" class="search-submit">🔍 Найти</button>
 </form>

@@ -1,4 +1,6 @@
 import re
+from django.db.models import Avg
+
 from django.views import View
 from newprod import settings
 import requests
@@ -14,7 +16,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from yookassa import Configuration, Configuration, Payment
 import uuid
-from .models import Category, Product, Basket, Order, OrderItem
+from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite
 import base64
 import time
 from django.views.decorators.csrf import csrf_exempt
@@ -180,7 +182,25 @@ class ProductsListView(ListView):
         )[:6]
         context['current_category'] = category_slug or ''
         return context
+def product_search(request):
+    """
+    Поиск товаров по названию
+    """
+    query = request.GET.get('q', '').strip()
+    products = []
 
+    if query:
+        # Ищем по названию (регистронезависимо)
+        products = Product.objects.filter(
+            name__icontains=query
+        ).filter(
+            in_stock=True
+        )[:10]  # Ограничиваем выборку
+
+    return render(request, 'store/search_results.html', {
+        'products': products,
+        'query': query
+    })
 
 @csrf_exempt
 @login_required
@@ -504,12 +524,67 @@ def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     gallery_images = product.images.all()
     main_image = product.image.url if product.image else '/static/images/no-image.png'
-
+    reviews = product.reviews.filter(is_published=True)
+    # Проверяем, оценил ли текущий пользователь
+    user_rating = None
+    if request.user.is_authenticated:
+        user_review = product.reviews.filter(user=request.user).first()
+        if user_review:
+            user_rating = user_review.rating
     return render(request, 'store/category/cartoffthings.html', {
         'product': product,
         'gallery_images': gallery_images,
         'main_image': main_image,
+        'reviews': reviews,
+        'user_rating': user_rating,
     })
+
+
+@csrf_exempt
+@login_required
+def save_rating(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            rating = data.get('rating')
+
+            if not product_id or not rating or rating < 1 or rating > 5:
+                return JsonResponse({'error': 'Некорректные данные'}, status=400)
+
+            product = get_object_or_404(Product, id=product_id)
+
+            # Создаём или обновляем отзыв
+            review, created = Review.objects.update_or_create(
+                user=request.user,
+                product=product,
+                defaults={
+                    'rating': rating,
+                    'is_published': True,
+                }
+            )
+
+            # Пересчитываем средний рейтинг
+            reviews = product.reviews.filter(is_published=True)
+            avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+            product.rating = round(avg_rating, 1)
+            product.review_count = reviews.count()
+            product.save()
+
+            return JsonResponse({
+                'status': 'ok',
+                'rating': product.rating,
+                'review_count': product.review_count
+            })
+
+        except Exception as e:
+            # Логируем ошибку
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Ошибка при сохранении рейтинга: {str(e)}")
+            return JsonResponse({'error': 'Внутренняя ошибка сервера'}, status=500)
+
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
 
 
 @login_required
@@ -687,9 +762,47 @@ def yookassa_webhook(request):
     return HttpResponse(status=400)
 
 
+@csrf_exempt
+@login_required
+def add_to_favorites(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            product = get_object_or_404(Product, id=product_id)
+            favorite, created = Favorite.objects.get_or_create(user=request.user, product=product)
+            return JsonResponse({
+                'status': 'added' if created else 'already_exists',
+                'message': 'Товар добавлен в избранное'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+@csrf_exempt
+@login_required
+def remove_from_favorites(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            product = get_object_or_404(Product, id=product_id)
+            Favorite.objects.filter(user=request.user, product=product).delete()
+            return JsonResponse({
+                'status': 'removed',
+                'message': 'Товар удалён из избранного'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+from django.middleware.csrf import get_token
+@login_required
 def my_favorites(request):
+    favorites = Favorite.objects.filter(user=request.user).select_related('product')
     # Здесь логика для страницы "Избранное"
-    return render(request, 'store/category/myfavorite.html')
+    return render(request, 'store/category/myfavorite.html',{
+        'favorites': favorites,
+        'csrf_token': get_token(request)
+    })
 
 
 def radio(request):
