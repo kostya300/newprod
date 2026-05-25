@@ -76,7 +76,7 @@
                     </button>
                 </form>
 
-                <button class="like-btn"
+                <button class="favorite-btn"
                         title="Добавить в избранное"
                         data-product-id="{{ product.id }}"
                         data-in-favorites="{% if product in request.user.favorites.all %}true{% else %}false{% endif %}">
@@ -106,23 +106,69 @@
 
 {% block extra_js %}
     <script>
+
+    </script>
+    <script>
+        function bindLikeButtons() {
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.removeEventListener('click', handleLikeClick);
+                btn.addEventListener('click', handleLikeClick);
+            });
+        }
+
+        function handleLikeClick(e) {
+            const btn = e.currentTarget;
+            alert('Лайк! (пока заглушка)');
+            // Позже добавим логику лайков
+        }
+    </script>
+    <script>
+        // === Общие утилиты (вынесены глобально, чтобы были доступны в delcomment.js) ===
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function getCSRFToken() {
+            // Сначала пробуем взять из скрытого поля
+            const token = document.querySelector('[name="csrfmiddlewaretoken"]')?.value;
+            if (token) return token;
+
+            // Если нет — из куки
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, 10) === 'csrftoken=') {
+                        cookieValue = decodeURIComponent(cookie.substring(10));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        window.getCSRFToken = getCSRFToken;
+
+        // ===================================
+        // 1. КОММЕНТАРИИ: Основная форма и ответы
+        // ===================================
         document.addEventListener('DOMContentLoaded', function () {
             const productId = document.querySelector('[data-product-id]')?.dataset.productId;
             const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
             const template = document.getElementById('reply-form-template');
             const commentsList = document.getElementById('comments-list');
 
-            // === Основная форма (верхняя) ===
             const mainForm = document.querySelector('.comment-form');
             if (mainForm) {
                 mainForm.addEventListener('submit', function (e) {
                     e.preventDefault();
                     submitCommentForm(mainForm, null);
+
                 });
             }
-
-            // === Привязка кнопок "Ответить" ===
-            bindReplyButtons();
 
             function bindReplyButtons() {
                 document.querySelectorAll('.reply-btn').forEach(btn => {
@@ -131,17 +177,14 @@
                 });
             }
 
-            // === Обработка клика "Ответить" ===
             function handleReplyClick(e) {
                 const btn = e.currentTarget;
                 const commentId = btn.getAttribute('data-comment-id');
                 const username = btn.closest('.comment-item').querySelector('strong').textContent;
                 const parentEl = btn.closest('.comment-item');
 
-                // Закрываем все открытые формы ответов
                 closeAllReplyForms();
 
-                // Клонируем форму из шаблона
                 const formContainer = template.content.cloneNode(true);
                 const form = formContainer.querySelector('.reply-form');
                 const textarea = form.querySelector('[name="text"]');
@@ -151,25 +194,21 @@
                 textarea.value = `${username}, `;
                 textarea.focus();
 
-                // Вставляем форму под комментарием
                 const wrapper = document.createElement('div');
                 wrapper.className = 'reply-form-wrapper';
                 wrapper.appendChild(form);
                 parentEl.appendChild(wrapper);
 
-                // Обработчик отправки
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
                     await submitCommentForm(form, wrapper);
                 });
 
-                // Отмена
                 wrapper.querySelector('.cancel-btn').addEventListener('click', () => {
                     wrapper.remove();
                 });
             }
 
-            // === Универсальная отправка формы ===
             async function submitCommentForm(form, container) {
                 const text = form.querySelector('[name="text"]').value.trim();
                 const parentInput = form.querySelector('[name="parent"]');
@@ -195,27 +234,29 @@
 
                     const comment = await response.json();
 
-                    // Создаём HTML нового комментария
                     const html = `
-            <div class="comment-item" data-comment-id="${comment.id}" data-parent-id="${comment.parent_id || ''}">
-                <div class="comment-header">
-                    <a href="/profile/${comment.user_slug}/" class="comment-author-link">
-                        <strong>${escapeHTML(comment.user)}</strong>
-                    </a>
-                    <span class="comment-date">${comment.created_at}</span>
-                </div>
-                <p class="comment-text">${escapeHTML(comment.text)}</p>
-                <div class="comment-actions">
-                    <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
-                </div>
-                <div class="comment-avatar">
-                    <img src="${comment.avatar}" alt="${comment.user}" width="40" height="40">
-                </div>
-                ${comment.is_parent ? '<div class="replies"></div>' : ''}
-            </div>`;
+    <div class="comment-item" data-comment-id="${comment.id}" data-parent-id="${comment.parent_id || ''}">
+        <div class="comment-header">
+            <a href="/profile/${comment.user_slug}/" class="comment-author-link">
+                <strong>${escapeHTML(comment.user)}</strong>
+            </a>
+            <span class="comment-date">${comment.created_at}</span>
+        </div>
+        <p class="comment-text">${escapeHTML(comment.text)}</p>
+        <div class="comment-actions">
+            <button class="like-btn">❤️ <span>3</span></button>
+            <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
+            ${comment.is_my ? `<button class="delete-btn" data-comment-id="${comment.id}" title="Удалить комментарий">🗑️</button>` : ''}
+        </div>
+        <div class="comment-avatar">
+            <img src="${comment.avatar}" alt="${comment.user}" width="25"
+                        height="25"
+                        style="border:1px solid #1c1c1c;border-radius:50%;">
+        </div>
+        ${!comment.parent_id ? '<div class="replies"></div>' : ''}
+    </div>`;
 
                     if (parent) {
-                        // Ответ на комментарий — вставляем в .replies
                         const parentEl = document.querySelector(`[data-comment-id="${parent}"]`);
                         let replies = parentEl.querySelector('.replies');
                         if (!replies) {
@@ -225,21 +266,15 @@
                         }
                         replies.insertAdjacentHTML('beforeend', html);
                     } else {
-                        // Основной комментарий — в начало списка
                         commentsList.insertAdjacentHTML('afterbegin', html);
-                    }
 
-                    // Сброс формы
+                    }
+                    document.dispatchEvent(new CustomEvent('commentAdded'));
                     form.reset();
-                    if (container) {
-                        container.remove(); // Удаляем форму ответа
-                    } else {
-                        // Это основная форма — просто сбрасываем
-                    }
+                    if (container) container.remove();
 
-                    // Перепривязываем кнопки
                     bindReplyButtons();
-
+                    // bindDeleteButtons(); ← Убрано! Пусть `delcomment.js` сам вызывает
                 } catch (error) {
                     console.error('Ошибка:', error);
                     alert('Не удалось отправить комментарий');
@@ -250,297 +285,174 @@
                 document.querySelectorAll('.reply-form-wrapper').forEach(el => el.remove());
             }
 
-            function escapeHTML(str) {
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
-            }
+            // Инициализация
+            bindReplyButtons();
+            bindLikeButtons();
+            bindDeleteButtons();
         });
     </script>
+
+    <!-- Рейтинг звездочками -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stars = document.querySelectorAll('.star');
+            const ratingEl = document.getElementById("rating");
+            const userRating = {{ user_rating|default:"null" }};
+            let currentRating = 0;
+
+            if (userRating) {
+                currentRating = userRating;
+                applyRating(currentRating);
+                lockRating();
+            }
+
+            function applyRating(value) {
+                stars.forEach(s => {
+                    const val = parseInt(s.getAttribute('data-value'));
+                    if (val <= value) {
+                        s.classList.add('active');
+                        s.classList.add('animate');
+                        setTimeout(() => s.classList.remove('animate'), 300);
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            }
+
+            function lockRating() {
+                ratingEl.classList.add('locked');
+                stars.forEach(s => s.style.pointerEvents = 'none');
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('mouseover', () => {
+                    if (ratingEl.classList.contains('locked')) return;
+                    applyRating(parseInt(star.getAttribute('data-value')));
+                });
+
+                star.addEventListener('mouseout', () => {
+                    if (ratingEl.classList.contains('locked')) return;
+                    applyRating(userRating || currentRating);
+                });
+
+                star.addEventListener('click', () => {
+                    if (ratingEl.classList.contains('locked')) return;
+                    if (!{{ request.user.is_authenticated|lower }}) {
+                        alert('Требуется авторизация для оценки');
+                        window.location.href = '/users/login/';
+                        return;
+                    }
+
+                    currentRating = parseInt(star.getAttribute('data-value'));
+
+                    fetch('{% url "save_rating" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': window.getCSRFToken(),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            product_id: "{{ product.id }}",
+                            rating: currentRating
+                        })
+                    })
+                        .then(response => {
+                            if (response.status === 401) {
+                                alert('Сессия истекла. Войдите снова.');
+                                window.location.href = '/users/login/';
+                                return;
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'ok') {
+                                const message = document.createElement('div');
+                                message.textContent = `Спасибо за оценку: ${currentRating} ★`;
+                                message.style.cssText = `
+                        position: fixed; top: 20px; right: 20px;
+                        background: #4CAF50; color: white; padding: 12px 20px;
+                        border-radius: 8px; font-size: 16px; font-weight: bold;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000;
+                        opacity: 0; transition: opacity 0.3s ease;
+                    `;
+                                document.body.appendChild(message);
+                                setTimeout(() => message.style.opacity = '1', 10);
+                                setTimeout(() => {
+                                    message.style.opacity = '0';
+                                    setTimeout(() => document.body.removeChild(message), 300);
+                                }, 2000);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Ошибка:', err);
+                            alert('Не удалось отправить оценку');
+                        });
+                });
+            });
+        });
+    </script>
+
     <!-- Избранное -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const productId = document.querySelector('[data-product-id]')?.dataset.productId;
-            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
-            const template = document.getElementById('reply-form-template');
+            const favoriteBtn = document.querySelector('.favorite-btn');
+            if (!favoriteBtn) return;
 
-            // === Открытие формы под комментарием ===
-            function openReplyForm(commentId, username) {
-                // Закрываем все открытые формы
-                closeAllReplyForms();
+            const productId = favoriteBtn.dataset.productId;
+            const inFavorites = favoriteBtn.dataset.inFavorites === 'true';
 
-                const parentEl = document.querySelector(`[data-comment-id="${commentId}"]`);
-                const formContainer = template.content.cloneNode(true);
-                const form = formContainer.querySelector('.reply-form');
-                const textarea = form.querySelector('[name="text"]');
-                const parentInput = form.querySelector('[name="parent"]');
-
-                // Устанавливаем данные
-                parentInput.value = commentId;
-                textarea.value = `${username}, `;
-                textarea.focus();
-
-                // Вставляем форму
-                const container = document.createElement('div');
-                container.className = 'reply-form-wrapper';
-                container.appendChild(form);
-                parentEl.appendChild(container);
-
-                // Обработчик отправки
-                form.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-                    await submitReply(form, container);
-                });
-
-                // Обработчик отмены
-                container.querySelector('.cancel-btn').addEventListener('click', () => {
-                    container.remove();
-                });
+            function updateButton(isFavorite) {
+                favoriteBtn.textContent = isFavorite ? '💔' : '❤️';
+                favoriteBtn.dataset.inFavorites = isFavorite;
+                favoriteBtn.title = isFavorite ? 'Удалить из избранного' : 'Добавить в избранное';
             }
 
-            // === Отправка ответа ===
-            async function submitReply(form, container) {
-                const text = form.querySelector('[name="text"]').value.trim();
-                const parent = form.querySelector('[name="parent"]').value;
-                if (!text) return alert('Введите текст ответа');
+            updateButton(inFavorites);
 
-                const formData = new FormData();
-                formData.append('text', text);
-                formData.append('parent', parent);
-                formData.append('csrfmiddlewaretoken', csrfToken);
+            favoriteBtn.addEventListener('click', function () {
+                const isFavorite = favoriteBtn.dataset.inFavorites === 'true';
+                const url = isFavorite
+                    ? '{% url "remove_from_favorites" %}'
+                    : '{% url "add_to_favorites" %}';
 
-                try {
-                    const response = await fetch(`/product/${productId}/comment/create/`, {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка сети');
-
-                    const comment = await response.json();
-
-                    // Создаём HTML нового комментария
-                    const html = `
-            <div class="comment-item" data-comment-id="${comment.id}" data-parent-id="${comment.parent_id}">
-                <div class="comment-header">
-                    <a href="/profile/${comment.user_slug}/" class="comment-author-link">
-                        <strong>${escapeHTML(comment.user)}</strong>
-                    </a>
-                    <span class="comment-date">${comment.created_at}</span>
-                </div>
-                <p class="comment-text">${escapeHTML(comment.text)}</p>
-                <div class="comment-actions">
-                    <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
-                </div>
-                <div class="comment-avatar">
-                    <img src="${comment.avatar}" alt="${comment.user}" width="40" height="40">
-                </div>
-            </div>`;
-
-                    // Вставляем в нужное место
-                    const parentEl = document.querySelector(`[data-comment-id="${comment.parent_id}"]`);
-                    let replies = parentEl.querySelector('.replies');
-                    if (!replies) {
-                        replies = document.createElement('div');
-                        replies.className = 'replies';
-                        parentEl.appendChild(replies);
-                    }
-                    replies.insertAdjacentHTML('beforeend', html);
-
-                    // Закрываем форму
-                    container.remove();
-
-                    // Перепривязываем кнопки
-                    bindReplyButtons();
-
-                } catch (error) {
-                    alert('Не удалось отправить комментарий');
-                }
-            }
-
-            // === Закрыть все формы ===
-            function closeAllReplyForms() {
-                document.querySelectorAll('.reply-form-wrapper').forEach(el => el.remove());
-            }
-
-            // === Привязка кнопок "Ответить" ===
-            function bindReplyButtons() {
-                document.querySelectorAll('.reply-btn').forEach(btn => {
-                    btn.removeEventListener('click', handleReplyClick);
-                    btn.addEventListener('click', handleReplyClick);
-                });
-            }
-
-            function handleReplyClick(e) {
-                const btn = e.currentTarget;
-                const commentId = btn.getAttribute('data-comment-id');
-                const username = btn.closest('.comment-item').querySelector('strong').textContent;
-                openReplyForm(commentId, username);
-            }
-
-            // === Привязка кнопки "Добавить комментарий" (вверху) ===
-            document.querySelectorAll('.btn-add-comment').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openReplyForm('', 'Комментатор');
-                });
-            });
-
-            // Инициализация
-            bindReplyButtons();
-        });
-
-        function escapeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-    </script>
-    <!-- Рейтинг звездочками -->
-    <script>
-        const productId = "{{ product.id }}";
-        const isUserAuthenticated = {{ request.user.is_authenticated|lower }};
-        const userRating = {{ user_rating|default:"null" }};  // null если не оценил
-        const ratingKey = `rating_product_${productId}`;
-
-        const stars = document.querySelectorAll('.star');
-        const ratingEl = document.getElementById("rating");
-        let currentRating = 0;
-
-        // === Инициализация ===
-        if (userRating) {
-            // Если пользователь уже оценил — показываем его оценку и блокируем
-            currentRating = userRating;
-            applyRating(currentRating);
-            lockRating();
-        } else {
-            // Иначе — проверяем localStorage (на всякий случай)
-            const savedRating = localStorage.getItem(ratingKey);
-            if (savedRating) {
-                // ⚠️ Это может быть чужая оценка — игнорируем, если пользователь не оценил
-                // Но оставим на случай, если он оценил, но сервер не сохранил
-                console.warn("Найдена оценка в localStorage, но нет в базе — возможно, ошибка");
-            }
-        }
-
-        function applyRating(value) {
-            stars.forEach(s => {
-                const val = parseInt(s.getAttribute('data-value'));
-                if (val <= value) {
-                    s.classList.add('active');
-                    // Добавляем анимацию только при установке
-                    s.classList.add('animate');
-                    // Убираем класс анимации, чтобы можно было повторить
-                    setTimeout(() => s.classList.remove('animate'), 300);
-                } else {
-                    s.classList.remove('active');
-                }
-            });
-        }
-
-        function lockRating() {
-            ratingEl.classList.add('locked');
-            stars.forEach(s => {
-                s.style.pointerEvents = 'none';
-            });
-        }
-
-        // === Обработчики событий ===
-        stars.forEach(star => {
-            star.addEventListener('mouseover', () => {
-                if (ratingEl.classList.contains('locked')) return;
-                const value = parseInt(star.getAttribute('data-value'));
-                applyRating(value);
-            });
-
-            star.addEventListener('mouseout', () => {
-                if (ratingEl.classList.contains('locked')) return;
-                applyRating(userRating || currentRating);
-            });
-
-            star.addEventListener('click', () => {
-                if (ratingEl.classList.contains('locked')) return;
-                if (!isUserAuthenticated) {
-                    alert('Требуется авторизация для оценки');
-                    window.location.href = '/users/login/';
-                    return;
-                }
-
-                currentRating = parseInt(star.getAttribute('data-value'));
-
-                // Отправляем на сервер
-                fetch('{% url "save_rating" %}', {
+                fetch(url, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': window.getCSRFToken(),
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        product_id: productId,
-                        rating: currentRating
-                    })
+                    body: JSON.stringify({product_id: productId})
                 })
-                    .then(response => {
-                        if (response.status === 401) {
-                            alert('Сессия истекла. Войдите снова.');
-                            window.location.href = '/users/login/';
-                            return;
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
-                        if (data.status === 'ok') {
-                            // Показываем сообщение
-                            const message = document.createElement('div');
-                            message.textContent = `Спасибо за оценку: ${currentRating} ★`;
-                            message.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    `;
-                            document.body.appendChild(message);
-
-                            // Плавное появление
-                            setTimeout(() => message.style.opacity = '1', 10);
-
-                            // Через 2 секунды — плавное исчезновение
-                            setTimeout(() => {
-                                message.style.opacity = '0';
-                                setTimeout(() => document.body.removeChild(message), 300);
-                            }, 2000);
+                        if (data.status === 'added' || data.status === 'removed') {
+                            updateButton(!isFavorite);
+                            showTooltip(data.status === 'added' ? 'Товар добавлен в избранное' : 'Товар удалён из избранного');
                         }
                     })
                     .catch(err => {
                         console.error('Ошибка:', err);
-                        alert('Не удалось отправить оценку');
+                        alert('Не удалось обновить избранное');
                     });
             });
-        });
 
-        // === CSRF ===
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name + 1));
-                        break;
-                    }
-                }
+            function showTooltip(message) {
+                const tooltip = document.createElement('div');
+                tooltip.textContent = message;
+                tooltip.style.cssText = `
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 10px 20px; border-radius: 6px;
+            font-size: 14px; z-index: 1000; opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+                document.body.appendChild(tooltip);
+                setTimeout(() => tooltip.style.opacity = '1', 10);
+                setTimeout(() => {
+                    tooltip.style.opacity = '0';
+                    setTimeout(() => document.body.removeChild(tooltip), 300);
+                }, 2000);
             }
-            return cookieValue;
-        }
+        });
     </script>
 
     <!-- Остальной JS -->
@@ -554,6 +466,8 @@
             input.value = qty;
         }
     </script>
-    <script src="{% static 'js/switchimagesinnotice.js' %}"></script>
 
+    <!-- Подключаем внешние JS-файлы -->
+    <script src="{% static 'js/delcomment.js' %}"></script>
+    <script src="{% static 'js/switchimagesinnotice.js' %}"></script>
 {% endblock %}

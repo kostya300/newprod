@@ -2,6 +2,9 @@
 {% extends "base.html" %}
 {% block title %}Главная — ВИКИ{% endblock %}
 {% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/timeforgoods.css' %}">
+{% endblock %}
 {% block content %}
 {% include "store/includes/header.html" %}
 <!-- Модальное окно поиска (скрыто по умолчанию) -->
@@ -14,7 +17,38 @@
     <h1>Добро пожаловать в <span class="gradient-text">ВИКИ</span></h1>
     <p class="typewriter-text"></p>
 </section>
-
+<!-- Товар дня с таймером -->
+<!-- Товар дня -->
+{% if deal_product %}
+    <section class="deal-of-day">
+        <div class="deal-card">
+            <div class="deal-content">
+                <h2>Товар дня</h2>
+                <p class="deal-tagline">Успей купить по суперцене!</p>
+                <div class="deal-info">
+                    <h3>{{ deal_product.name }}</h3>
+                    <div class="deal-price">
+                        <span class="current-price">{{ deal_product.price }} ₽</span>
+                        {% if deal_product.old_price %}
+                            <span class="old-price">{{ deal_product.old_price }} ₽</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="countdown-timer">
+                    <div class="timer-item"><span id="hours">00</span>ч</div>
+                    <div class="timer-item"><span id="minutes">00</span>м</div>
+                    <div class="timer-item"><span id="seconds">00</span>с</div>
+                </div>
+                <a href="{% url 'product_detail' slug=deal_product.slug %}" class="btn-buy-now">
+                    Купить сейчас →
+                </a>
+            </div>
+            <div class="deal-image">
+                <img src="{{ deal_product.image.url }}" alt="{{ deal_product.name }}">
+            </div>
+        </div>
+    </section>
+{% endif %}
 <!-- Сетка из 6 карточек -->
 <section class="weekly-products-grid">
     <!-- Карточки повторяются, позже можно заменить на разные товары -->
@@ -56,7 +90,8 @@
         {% endif %}
     </div>
 {% endif %}
-<script src="{% static 'js/animateprint.js' %}"></script>
-<script type="{% static 'js/cart.js' %}"></script>
+    <script src="{% static 'js/timerfordoodday.js' %}"></script>
+    <script src="{% static 'js/animateprint.js' %}"></script>
+    <script type="{% static 'js/cart.js' %}"></script>
 
 {% endblock %}

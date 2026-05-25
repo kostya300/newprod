@@ -1,3 +1,23 @@
+/*delete comments*/
+
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: #d32f2f;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    padding: 2px 5px;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    background: #ffebee;
+    border-radius: 4px;
+}
+/*delete comments*/
+
 /* css/comments.css */
 .reply-form-container {
     margin: 10px 0 0 40px;
@@ -8,6 +28,8 @@
 }
 
 .reply-form textarea {
+    background: inherit;
+    color: var(--text-primary);
     width: 100%;
     min-height: 60px;
     padding: 8px;
@@ -144,7 +166,7 @@
     background-color: rgba(106, 17, 203, 0.03);
 }
 .comment-item .replies .comment-item {
-    background: #f9f9f9;
+
     border-color: #ddd;
 }
 .comment-item .replies {
@@ -191,18 +213,29 @@
     gap: 4px;
     transition: transform 0.2s ease;
 }
-
+.favorite-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+.favorite-btn:hover {
+    transform: scale(1.1);
+}
 .like-btn:hover {
     transform: scale(1.1);
 }
 
 .reply-btn {
+    color: #ff0070;
     background: none;
     border: none;
-    color: var(--btn-gradient-start);
     cursor: pointer;
     font-size: 14px;
-    text-decoration: underline;
 }
 
 .reply-btn:hover {

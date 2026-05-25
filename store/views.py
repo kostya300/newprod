@@ -3,6 +3,8 @@ from django.db.models import Avg
 from django.utils.formats import date_format
 from django.utils.timezone import localtime
 from django.views import View
+from django.views.decorators.http import require_http_methods
+
 from newprod import settings
 import requests
 from rest_framework.response import Response
@@ -31,10 +33,16 @@ from users.models import User
 from .utils import get_gigachat_token  # ← из utils.py
 from urllib.parse import quote  # ← для quote(user_query), если хотите
 import logging
-
+from django.core.cache import cache
 logger = logging.getLogger(__name__)
 
 
+def get_deal_of_day():
+    deal = cache.get('deal_of_day')
+    if not deal:
+        deal = Product.objects.filter(is_featured=True).order_by('?').first()
+        cache.set('deal_of_day', deal, 60 * 60 * 24)  # 24 часа
+    return deal
 class IndexView(ListView):
     template_name = 'store/index.html'
     context_object_name = 'featured_products'
@@ -65,6 +73,7 @@ class IndexView(ListView):
             in_stock=True
         )[:6]
 
+
         # Пагинация: по 3 на страницу
         paginator = Paginator(featured_products_list, 3)
 
@@ -75,6 +84,7 @@ class IndexView(ListView):
 
         # Добавляем в контекст
         context['featured_products'] = featured_products
+        context['deal_product'] = get_deal_of_day()
         context['categories'] = Category.objects.filter(is_active=True)[:6]
 
         return context
@@ -522,6 +532,17 @@ def ai_chat(request):
 
     return JsonResponse({'error': 'Only POST'}, status=400)
 
+@login_required
+@require_http_methods(["POST"])
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if comment.user != request.user:
+        return JsonResponse({'error': 'Нет прав'}, status=403)
+
+    comment.delete()
+    return JsonResponse({'status': 'ok'})
+
+
 # store/views.py
 from django.utils import timezone
 from django.contrib.humanize.templatetags.humanize import naturaltime
@@ -544,9 +565,8 @@ class CommentCreateView(LoginRequiredMixin, View):
                     pass
 
             comment.save()
-            profile = getattr(request.user, 'profile', None)
-            avatar_url = profile.avatar_url if profile and hasattr(profile, 'avatar') and profile.avatar else '/static/img/default-avatar.png'
-            user_slug = profile.slug if profile else comment.user.username.lower()
+            avatar_url = comment.user.avatar.url if comment.user.avatar else '/static/images/default-avatar.png'
+            user_slug = comment.user.username.lower()
 
             return JsonResponse({
                 'id': comment.id,
@@ -557,6 +577,7 @@ class CommentCreateView(LoginRequiredMixin, View):
                 'is_child': bool(comment.parent_id),
                 'parent_id': comment.parent_id,
                 'avatar': avatar_url,
+                'is_my': True,
             })
 
         return JsonResponse({'error': form.errors}, status=400)

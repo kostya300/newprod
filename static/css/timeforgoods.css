@@ -1,0 +1,175 @@
+/* Товар дня */
+.deal-of-day {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.deal-card {
+    max-width: 790px;
+    margin: 0 auto;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Адаптивность: на мобильных — стекаем */
+@media (max-width: 768px) {
+    .deal-card {
+        flex-direction: column;
+    }
+}
+
+.deal-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+}
+
+.deal-image {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 0 16px 16px 0;
+}
+
+.deal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.deal-image img:hover {
+    transform: scale(1.05);
+}
+
+.deal-content h2 {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--text-title, #1c1c1c);
+}
+
+.deal-tagline {
+    font-size: 1.1rem;
+    color: #d32f2f;
+    font-weight: 600;
+    margin: 0;
+}
+
+.deal-info h3 {
+    margin: 10px 0 5px;
+    font-size: 1.5rem;
+    color: var(--text-title, #1c1c1c);
+}
+
+.deal-price {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #1c1c1c;
+}
+
+.current-price {
+    color: #1976d2;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 8px;
+    font-size: 1.1rem;
+}
+
+/* Таймер */
+.countdown-timer {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #d32f2f;
+}
+
+.timer-item {
+    background: #ffebee;
+    color: #c62828;
+    padding: 8px 12px;
+    border-radius: 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid #ef9a9a;
+}
+
+/* Кнопка */
+.btn-buy-now {
+    display: inline-block;
+    background: #1976d2;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    transition: background 0.3s ease;
+}
+
+.btn-buy-now:hover {
+    background: #1565c0;
+    transform: translateY(-2px);
+}
+
+/* Тёмная тема */
+@media (prefers-color-scheme: dark) {
+    .deal-card {
+        background: #1e1e1e;
+        border-color: #333;
+    }
+
+    .deal-content h2,
+    .deal-info h3,
+    .deal-price {
+        color: #fff;
+    }
+
+    .countdown-timer {
+        color: #ff7979;
+    }
+
+    .timer-item {
+        background: #3a0f0f;
+        color: #ff7979;
+        border-color: #7a1c1c;
+    }
+
+    .btn-buy-now {
+        background: #d32f2f;
+    }
+
+    .btn-buy-now:hover {
+        background: #c62828;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .countdown-timer {
+        font-size: 1.4rem;
+    }
+
+    .deal-content {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .deal-image {
+        border-radius: 16px;
+        height: 200px;
+    }
+}
