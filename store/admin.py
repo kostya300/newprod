@@ -1,7 +1,9 @@
 # store/admin.py
 from django.contrib import admin
+from django_mptt_admin.admin import DjangoMpttAdmin
+from mptt.admin import MPTTModelAdmin
 from django.utils.safestring import mark_safe
-from .models import Category, Product, Review, ProductImage, PriceComparison, Basket, Order, OrderItem
+from .models import Category, Product, Review, ProductImage, PriceComparison, Basket, Order, OrderItem, Comment
 
 
 # === Вспомогательные функции ===
@@ -92,7 +94,29 @@ class ProductAdmin(admin.ModelAdmin):
 
     inlines = [ProductImageInline, ReviewInline]
 
+@admin.register(Comment)
+class CommentAdmin(DjangoMpttAdmin):
+    list_display = [
+        'user',
+        'product',
+        'parent',
+        'created_at',
+    ]
+    list_filter = [ 'created_at', 'product']
+    search_fields = ['user__username', 'text', 'product__name']
+    list_per_page = 20
 
+    # Чтобы можно было редактировать статус в списке
+    readonly_fields = ['created_at']
+
+    def has_add_permission(self, request):
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return True
 # === Админка: Отзывы ===
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):

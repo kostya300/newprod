@@ -1,12 +1,13 @@
 from django.db import models
-
+from mptt.models import MPTTModel, TreeForeignKey
 from users.models import User
 from django.contrib.auth import get_user_model
+
 
 class Category(models.Model):
     name = models.CharField('Название', max_length=100, unique=True)
     slug = models.SlugField('URL', unique=True)
-    description = models.TextField('Описание', blank=True,null=True)
+    description = models.TextField('Описание', blank=True, null=True)
     image = models.ImageField('Изображение категории', upload_to='categories/', blank=True, null=True)
     is_active = models.BooleanField('Активна', default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -18,9 +19,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
-
-
 
 
 class Product(models.Model):
@@ -61,6 +59,42 @@ class Product(models.Model):
         if self.old_price and self.old_price > self.price:
             return round((1 - self.price / self.old_price) * 100)
         return 0
+
+
+# store/models.py
+
+class Comment(MPTTModel):
+    product = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    text = models.TextField('Текст', max_length=3000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    parent = TreeForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
+
+    class MPTTMeta:
+        order_insertion_by = ['-created_at']
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username}: {self.text[:50]}'
+
+
+# store/models.py
 class Review(models.Model):
     product = models.ForeignKey(
         Product,
@@ -71,29 +105,64 @@ class Review(models.Model):
         User,
         on_delete=models.CASCADE
     )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children',
+        verbose_name='Родительский отзыв'
+    )
     rating = models.PositiveIntegerField(
         'Оценка',
-        choices=[(i, str(i)) for i in range(1, 6)]
+        choices=[(i, str(i)) for i in range(1, 6)],
+        null=True,
+        blank=True
     )
     text = models.TextField('Отзыв', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField('Опубликован', default=True)
+
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         ordering = ['-created_at']
+
     def __str__(self):
-        return f"{self.user.username} — {self.product.name} — {self.rating}★"
+        return f"{self.user.username} — {self.text[:50]}"
+
+    @property
+    def likes_count(self):
+        return self.likes.count()
+
+
+class ReviewLike(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('review', 'user')
+
+    def __str__(self):
+        return f"{self.user} → {self.review}"
+
+
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='favorites')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorites')
     added_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         unique_together = ('user', 'product')  # Нельзя добавить дважды
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
+
+
 class PriceComparison(models.Model):
     MARKETPLACES = (
         ('books_to_scrape', 'BooksToScrape'),
@@ -104,7 +173,6 @@ class PriceComparison(models.Model):
     marketplace = models.CharField(max_length=20, choices=MARKETPLACES)
     price = models.PositiveIntegerField(verbose_name="Цена")
     url = models.URLField(verbose_name="Ссылка")
-
 
     title = models.CharField(max_length=200, blank=True, verbose_name="Название книги")
     image = models.URLField(blank=True, verbose_name="Обложка")
@@ -120,7 +188,9 @@ class PriceComparison(models.Model):
     def __str__(self):
         return f"{self.get_marketplace_display()} — {self.price} ₽"
 
+
 User = get_user_model()
+
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -144,15 +214,16 @@ class Order(models.Model):
     last_name = models.CharField(max_length=50)
     phone = models.CharField(max_length=20)
     email = models.EmailField()
-    delivery_type = models.CharField(max_length=10,choices=DELIVERY_CHOICES)
+    delivery_type = models.CharField(max_length=10, choices=DELIVERY_CHOICES)
     city = models.CharField(max_length=100, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     postal_code = models.CharField(max_length=10, blank=True, null=True)
-    payment_method = models.CharField(max_length=10,choices=PAYMENT_CHOICES)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
     comment = models.TextField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     yookassa_payment_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
-    status = models.CharField(max_length=20,choices=STATUS_CHOICES, default='created')  # created, pending, succeeded, cancelled
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES,
+                              default='created')  # created, pending, succeeded, cancelled
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -162,6 +233,8 @@ class Order(models.Model):
         if self.yookassa_payment_id and self.status != 'succeeded':
             return f"https://yookassa.ru/my/payments/{self.yookassa_payment_id}"
         return None
+
+
 class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
@@ -178,15 +251,18 @@ class OrderItem(models.Model):
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField('Количество', default=1)
     total_price = models.DecimalField('Общая стоимость', max_digits=10, decimal_places=2)
+
     class Meta:
         verbose_name = 'Товар в заказе'
         verbose_name_plural = 'Товары в заказе'
+
     def __str__(self):
         return f"{self.quantity} × {self.name} в заказе {self.order.id}"
 
     def save(self, *args, **kwargs):
         self.total_price = self.price * self.quantity
-        super().save(*args,** kwargs)
+        super().save(*args, **kwargs)
+
 
 class Basket(models.Model):
     user = models.ForeignKey(
@@ -235,15 +311,18 @@ class Basket(models.Model):
             return first_img.image.url
         return '/static/images/no-image.png'  # заглушка
 
+
 # модель ProductImage для хранения дополнительных изображений.
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product,related_name='images',on_delete=models.CASCADE,verbose_name='Товар')
+    product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE, verbose_name='Товар')
     image = models.ImageField("Изображение", upload_to="products/gallery/")
-    order = models.PositiveIntegerField("Порядок",default=0)
+    order = models.PositiveIntegerField("Порядок", default=0)
     is_main = models.BooleanField("Основное изображение", default=False)
+
     class Meta:
         ordering = ['order']
         verbose_name = "Изображение товара"
-        verbose_name_plural ="Галерея изображений"
+        verbose_name_plural = "Галерея изображений"
+
     def __str__(self):
         return f"{self.product}- фото {self.order}"

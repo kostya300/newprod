@@ -9,6 +9,9 @@ urlpatterns = [
     path('order/', views.order_view, name='order'),
     path('filters/', views.filter_page, name='filter_page'),
     path('search/', views.product_search, name='product_search'),
+
+    path('product/<int:product_id>/comment/create/', views.CommentCreateView.as_view(), name='comment_create'),
+    path('like-review/', views.like_review, name='like_review'),
     path('cart/', views.cart, name='cart'),
     path('api/cart/', views.cart_api, name='cart_api'),
     path('api/order/', views.create_order, name='create_order'),

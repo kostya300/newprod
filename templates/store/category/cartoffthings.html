@@ -100,91 +100,300 @@
         <p>{{ product.description|linebreaks }}</p>
     </section>
     <!-- Подключаем отзывы -->
-    {% include "store/comments.html" %}
+    {% include "store/comments.html" with product=product %}
 
 {% endblock %}
 
 {% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const productId = document.querySelector('[data-product-id]')?.dataset.productId;
+            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+            const template = document.getElementById('reply-form-template');
+            const commentsList = document.getElementById('comments-list');
+
+            // === Основная форма (верхняя) ===
+            const mainForm = document.querySelector('.comment-form');
+            if (mainForm) {
+                mainForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    submitCommentForm(mainForm, null);
+                });
+            }
+
+            // === Привязка кнопок "Ответить" ===
+            bindReplyButtons();
+
+            function bindReplyButtons() {
+                document.querySelectorAll('.reply-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleReplyClick);
+                    btn.addEventListener('click', handleReplyClick);
+                });
+            }
+
+            // === Обработка клика "Ответить" ===
+            function handleReplyClick(e) {
+                const btn = e.currentTarget;
+                const commentId = btn.getAttribute('data-comment-id');
+                const username = btn.closest('.comment-item').querySelector('strong').textContent;
+                const parentEl = btn.closest('.comment-item');
+
+                // Закрываем все открытые формы ответов
+                closeAllReplyForms();
+
+                // Клонируем форму из шаблона
+                const formContainer = template.content.cloneNode(true);
+                const form = formContainer.querySelector('.reply-form');
+                const textarea = form.querySelector('[name="text"]');
+                const parentInput = form.querySelector('[name="parent"]');
+
+                parentInput.value = commentId;
+                textarea.value = `${username}, `;
+                textarea.focus();
+
+                // Вставляем форму под комментарием
+                const wrapper = document.createElement('div');
+                wrapper.className = 'reply-form-wrapper';
+                wrapper.appendChild(form);
+                parentEl.appendChild(wrapper);
+
+                // Обработчик отправки
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    await submitCommentForm(form, wrapper);
+                });
+
+                // Отмена
+                wrapper.querySelector('.cancel-btn').addEventListener('click', () => {
+                    wrapper.remove();
+                });
+            }
+
+            // === Универсальная отправка формы ===
+            async function submitCommentForm(form, container) {
+                const text = form.querySelector('[name="text"]').value.trim();
+                const parentInput = form.querySelector('[name="parent"]');
+                const parent = parentInput.value;
+
+                if (!text) {
+                    alert('Введите текст комментария');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('text', text);
+                formData.append('parent', parent);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                try {
+                    const response = await fetch(`/product/${productId}/comment/create/`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!response.ok) throw new Error('Ошибка сети');
+
+                    const comment = await response.json();
+
+                    // Создаём HTML нового комментария
+                    const html = `
+            <div class="comment-item" data-comment-id="${comment.id}" data-parent-id="${comment.parent_id || ''}">
+                <div class="comment-header">
+                    <a href="/profile/${comment.user_slug}/" class="comment-author-link">
+                        <strong>${escapeHTML(comment.user)}</strong>
+                    </a>
+                    <span class="comment-date">${comment.created_at}</span>
+                </div>
+                <p class="comment-text">${escapeHTML(comment.text)}</p>
+                <div class="comment-actions">
+                    <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
+                </div>
+                <div class="comment-avatar">
+                    <img src="${comment.avatar}" alt="${comment.user}" width="40" height="40">
+                </div>
+                ${comment.is_parent ? '<div class="replies"></div>' : ''}
+            </div>`;
+
+                    if (parent) {
+                        // Ответ на комментарий — вставляем в .replies
+                        const parentEl = document.querySelector(`[data-comment-id="${parent}"]`);
+                        let replies = parentEl.querySelector('.replies');
+                        if (!replies) {
+                            replies = document.createElement('div');
+                            replies.className = 'replies';
+                            parentEl.appendChild(replies);
+                        }
+                        replies.insertAdjacentHTML('beforeend', html);
+                    } else {
+                        // Основной комментарий — в начало списка
+                        commentsList.insertAdjacentHTML('afterbegin', html);
+                    }
+
+                    // Сброс формы
+                    form.reset();
+                    if (container) {
+                        container.remove(); // Удаляем форму ответа
+                    } else {
+                        // Это основная форма — просто сбрасываем
+                    }
+
+                    // Перепривязываем кнопки
+                    bindReplyButtons();
+
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    alert('Не удалось отправить комментарий');
+                }
+            }
+
+            function closeAllReplyForms() {
+                document.querySelectorAll('.reply-form-wrapper').forEach(el => el.remove());
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+        });
+    </script>
     <!-- Избранное -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const likeBtn = document.querySelector('.like-btn');
-            if (!likeBtn) return;
+            const productId = document.querySelector('[data-product-id]')?.dataset.productId;
+            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+            const template = document.getElementById('reply-form-template');
 
-            const productId = likeBtn.dataset.productId;
-            const inFavorites = likeBtn.dataset.inFavorites === 'true';
+            // === Открытие формы под комментарием ===
+            function openReplyForm(commentId, username) {
+                // Закрываем все открытые формы
+                closeAllReplyForms();
 
-            // Обновляем состояние кнопки
-            function updateButton(isFavorite) {
-                likeBtn.textContent = isFavorite ? '💔' : '❤️';
-                likeBtn.dataset.inFavorites = isFavorite;
-                likeBtn.title = isFavorite ? 'Удалить из избранного' : 'Добавить в избранное';
+                const parentEl = document.querySelector(`[data-comment-id="${commentId}"]`);
+                const formContainer = template.content.cloneNode(true);
+                const form = formContainer.querySelector('.reply-form');
+                const textarea = form.querySelector('[name="text"]');
+                const parentInput = form.querySelector('[name="parent"]');
+
+                // Устанавливаем данные
+                parentInput.value = commentId;
+                textarea.value = `${username}, `;
+                textarea.focus();
+
+                // Вставляем форму
+                const container = document.createElement('div');
+                container.className = 'reply-form-wrapper';
+                container.appendChild(form);
+                parentEl.appendChild(container);
+
+                // Обработчик отправки
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    await submitReply(form, container);
+                });
+
+                // Обработчик отмены
+                container.querySelector('.cancel-btn').addEventListener('click', () => {
+                    container.remove();
+                });
             }
 
-            updateButton(inFavorites);
+            // === Отправка ответа ===
+            async function submitReply(form, container) {
+                const text = form.querySelector('[name="text"]').value.trim();
+                const parent = form.querySelector('[name="parent"]').value;
+                if (!text) return alert('Введите текст ответа');
 
-            likeBtn.addEventListener('click', function () {
-                const isFavorite = likeBtn.dataset.inFavorites === 'true';
+                const formData = new FormData();
+                formData.append('text', text);
+                formData.append('parent', parent);
+                formData.append('csrfmiddlewaretoken', csrfToken);
 
-                const url = isFavorite
-                    ? '{% url "remove_from_favorites" %}'
-                    : '{% url "add_to_favorites" %}';
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({product_id: productId})
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'added' || data.status === 'removed') {
-                            updateButton(!isFavorite);
-                            showTooltip(data.status === 'added' ? 'Товар добавлен в избранное' : 'Товар удалён из избранного');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Ошибка:', err);
-                        alert('Не удалось обновить избранное');
+                try {
+                    const response = await fetch(`/product/${productId}/comment/create/`, {
+                        method: 'POST',
+                        body: formData,
                     });
+
+                    if (!response.ok) throw new Error('Ошибка сети');
+
+                    const comment = await response.json();
+
+                    // Создаём HTML нового комментария
+                    const html = `
+            <div class="comment-item" data-comment-id="${comment.id}" data-parent-id="${comment.parent_id}">
+                <div class="comment-header">
+                    <a href="/profile/${comment.user_slug}/" class="comment-author-link">
+                        <strong>${escapeHTML(comment.user)}</strong>
+                    </a>
+                    <span class="comment-date">${comment.created_at}</span>
+                </div>
+                <p class="comment-text">${escapeHTML(comment.text)}</p>
+                <div class="comment-actions">
+                    <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
+                </div>
+                <div class="comment-avatar">
+                    <img src="${comment.avatar}" alt="${comment.user}" width="40" height="40">
+                </div>
+            </div>`;
+
+                    // Вставляем в нужное место
+                    const parentEl = document.querySelector(`[data-comment-id="${comment.parent_id}"]`);
+                    let replies = parentEl.querySelector('.replies');
+                    if (!replies) {
+                        replies = document.createElement('div');
+                        replies.className = 'replies';
+                        parentEl.appendChild(replies);
+                    }
+                    replies.insertAdjacentHTML('beforeend', html);
+
+                    // Закрываем форму
+                    container.remove();
+
+                    // Перепривязываем кнопки
+                    bindReplyButtons();
+
+                } catch (error) {
+                    alert('Не удалось отправить комментарий');
+                }
+            }
+
+            // === Закрыть все формы ===
+            function closeAllReplyForms() {
+                document.querySelectorAll('.reply-form-wrapper').forEach(el => el.remove());
+            }
+
+            // === Привязка кнопок "Ответить" ===
+            function bindReplyButtons() {
+                document.querySelectorAll('.reply-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleReplyClick);
+                    btn.addEventListener('click', handleReplyClick);
+                });
+            }
+
+            function handleReplyClick(e) {
+                const btn = e.currentTarget;
+                const commentId = btn.getAttribute('data-comment-id');
+                const username = btn.closest('.comment-item').querySelector('strong').textContent;
+                openReplyForm(commentId, username);
+            }
+
+            // === Привязка кнопки "Добавить комментарий" (вверху) ===
+            document.querySelectorAll('.btn-add-comment').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openReplyForm('', 'Комментатор');
+                });
             });
 
-            // Вспомогательная функция для CSRF
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
-
-            // Подсказка
-            function showTooltip(message) {
-                const tooltip = document.createElement('div');
-                tooltip.textContent = message;
-                tooltip.style.cssText = `
-                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                background: #333; color: white; padding: 10px 20px; border-radius: 6px;
-                font-size: 14px; z-index: 1000; opacity: 0;
-                transition: opacity 0.3s ease;
-            `;
-                document.body.appendChild(tooltip);
-                setTimeout(() => tooltip.style.opacity = '1', 10);
-                setTimeout(() => {
-                    tooltip.style.opacity = '0';
-                    setTimeout(() => document.body.removeChild(tooltip), 300);
-                }, 2000);
-            }
+            // Инициализация
+            bindReplyButtons();
         });
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
     </script>
     <!-- Рейтинг звездочками -->
     <script>
@@ -346,5 +555,5 @@
         }
     </script>
     <script src="{% static 'js/switchimagesinnotice.js' %}"></script>
-    <script src="{% static 'js/comments.js' %}"></script>
+
 {% endblock %}

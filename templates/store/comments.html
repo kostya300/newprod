@@ -1,55 +1,39 @@
-<section class="comments-section">
-    <h2>Отзывы (47)</h2>
-    <!-- Форма добавления отзыва -->
-    <div class="add-comment">
-        <textarea placeholder="Оставьте свой отзыв..."></textarea>
-        <button class="submit-comment">Отправить</button>
-    </div>
+<!-- templates/store/comments.html -->
+<section class="comments-section" id="comments-section">
+    <h2>Комментарии ({{ comments.count }})</h2>
 
-    <!-- Список отзывов -->
-    <div class="comments-list">
-        <div class="comment-item">
-            <div class="comment-header">
-                <strong>Александр К.</strong>
-                <span class="comment-date">12 апреля 2025</span>
-            </div>
-            <p class="comment-text">
-                Отличный телефон! Камера просто огонь, особенно в ночной съёмке. Батарея держит весь день даже при активном использовании.
-            </p>
-            <div class="comment-actions">
-                <button class="like-btn">❤️ <span>3</span></button>
-                <button class="reply-btn">Ответить</button>
-            </div>
-
-            <!-- Ответ -->
-            <div class="replies">
-                <div class="comment-item reply">
-                    <div class="comment-header">
-                        <strong>Модератор</strong>
-                        <span class="comment-date">13 апреля 2025</span>
-                    </div>
-                    <p class="comment-text">
-                        Благодарим за отзыв! Рады, что вы довольны камерой.
-                    </p>
-                    <div class="comment-actions">
-                        <button class="like-btn">❤️ <span>1</span></button>
-                    </div>
+    {% if request.user.is_authenticated %}
+        <div class="add-comment">
+            <form class="comment-form" data-product-id="{{ product.id }}">
+                {% csrf_token %}
+                <textarea name="text" placeholder="Оставьте свой комментарий..." required></textarea>
+                <input type="hidden" name="parent" value="" />
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Отправить</button>
                 </div>
-            </div>
+            </form>
         </div>
+    {% else %}
+        <p><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить комментарий.</p>
+    {% endif %}
 
-        <div class="comment-item">
-            <div class="comment-header">
-                <strong>Елена М.</strong>
-                <span class="comment-date">10 апреля 2025</span>
-            </div>
-            <p class="comment-text">
-                Хороший дизайн, но скользит в руке. Рекомендую чехол. Производительность на высоте!
-            </p>
-            <div class="comment-actions">
-                <button class="like-btn">❤️ <span>5</span></button>
-                <button class="reply-btn">Ответить</button>
-            </div>
-        </div>
+    <div class="comments-list" id="comments-list">
+        {% include "store/includes/comments_tree.html" %}
     </div>
+
+<!-- Шаблон формы ответа (скрытый) -->
+    <template id="reply-form-template">
+        <div class="reply-form-container">
+            <form class="reply-form" data-product-id="{{ product.id }}">
+                {% csrf_token %}
+                <textarea name="text" placeholder="Напишите ваш ответ..." required></textarea>
+                <input type="hidden" name="parent" value="" />
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Отправить</button>
+                    <button type="button" class="cancel-btn">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </template>
 </section>
+

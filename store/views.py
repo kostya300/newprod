@@ -1,10 +1,13 @@
 import re
 from django.db.models import Avg
-
+from django.utils.formats import date_format
+from django.utils.timezone import localtime
 from django.views import View
 from newprod import settings
 import requests
 from rest_framework.response import Response
+from .forms import CommentCreateForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView
 from django.contrib.admin.templatetags.admin_list import pagination
 from django.core.paginator import Page, Paginator, PageNotAnInteger, EmptyPage
@@ -16,7 +19,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from yookassa import Configuration, Configuration, Payment
 import uuid
-from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite
+from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite, ReviewLike, Comment
 import base64
 import time
 from django.views.decorators.csrf import csrf_exempt
@@ -519,26 +522,91 @@ def ai_chat(request):
 
     return JsonResponse({'error': 'Only POST'}, status=400)
 
+# store/views.py
+from django.utils import timezone
+from django.contrib.humanize.templatetags.humanize import naturaltime
+class CommentCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = CommentCreateForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            product = get_object_or_404(Product, id=kwargs.get('product_id'))
+            comment.product = product
+            comment.user = request.user
+
+
+            parent_id = form.cleaned_data.get('parent')
+            if parent_id:
+                try:
+                    parent_comment = Comment.objects.get(id=parent_id, product=product)
+                    comment.parent = parent_comment  # Это ForeignKey — присваиваем объект
+                except Comment.DoesNotExist:
+                    pass
+
+            comment.save()
+            profile = getattr(request.user, 'profile', None)
+            avatar_url = profile.avatar_url if profile and hasattr(profile, 'avatar') and profile.avatar else '/static/img/default-avatar.png'
+            user_slug = profile.slug if profile else comment.user.username.lower()
+
+            return JsonResponse({
+                'id': comment.id,
+                'user': comment.user.username,
+                'user_slug': user_slug,
+                'text': comment.text,
+                'created_at': comment.created_at.strftime('%d %b %Y %H:%M'),
+                'is_child': bool(comment.parent_id),
+                'parent_id': comment.parent_id,
+                'avatar': avatar_url,
+            })
+
+        return JsonResponse({'error': form.errors}, status=400)
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
     gallery_images = product.images.all()
     main_image = product.image.url if product.image else '/static/images/no-image.png'
-    reviews = product.reviews.filter(is_published=True)
-    # Проверяем, оценил ли текущий пользователь
+
+    # Все комментарии, включая вложенные
+    comments = product.comments.all().order_by('tree_id', 'lft')
+    print(f"🔍 Найдено комментариев: {comments.count()}")
+
     user_rating = None
     if request.user.is_authenticated:
         user_review = product.reviews.filter(user=request.user).first()
         if user_review:
             user_rating = user_review.rating
+
     return render(request, 'store/category/cartoffthings.html', {
         'product': product,
         'gallery_images': gallery_images,
         'main_image': main_image,
-        'reviews': reviews,
+        'comments': comments,
         'user_rating': user_rating,
+        'form': CommentCreateForm(),
     })
 
+@csrf_exempt
+@login_required
+def like_review(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            review_id = data.get('review_id')
+            review = get_object_or_404(Review, id=review_id)
+            like, created = ReviewLike.objects.get_or_create(review=review, user=request.user)
+            if not created:
+                like.delete()
+                liked = False
+            else:
+                liked = True
+            return JsonResponse({
+                'status': 'ok',
+                'liked': liked,
+                'likes_count': review.likes.count()
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
 
 @csrf_exempt
 @login_required

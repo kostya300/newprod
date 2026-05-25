@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django_dump_load_utf8',
     'social_django',
     'django_vite',
+    'mptt',
 ]
 
 MIDDLEWARE = [

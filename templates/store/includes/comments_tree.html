@@ -1,0 +1,35 @@
+<!-- templates/store/includes/comments_tree.html -->
+{% load mptt_tags %}
+{% recursetree comments %}
+    <div class="comment-item" data-comment-id="{{ node.id }}" data-parent-id="{{ node.parent_id|default:'' }}">
+        <div class="comment-header">
+            <a href="{{ node.user.profile.get_absolute_url }}" class="comment-author-link">
+                <strong>{{ node.user.username }}</strong>
+            </a>
+            <span class="comment-date">{{ node.created_at|date:"d M Y H:i" }}</span>
+        </div>
+        <p class="comment-text">{{ node.text }}</p>
+        <div class="comment-actions">
+            <button class="like-btn">❤️ <span>3</span></button>
+            <button class="reply-btn" data-comment-id="{{ node.id }}">Ответить</button>
+        </div>
+
+        <!-- Аватар (прямо как у вас, но с безопасным доступом) -->
+        <div class="comment-avatar">
+            <img
+                src="{{ node.user.profile.avatar.url }}"
+
+                alt="{{ node.user.username }}"
+                width="40"
+                height="40"
+            >
+        </div>
+
+        <!-- Вложенные комментарии -->
+        {% if not node.is_leaf_node %}
+            <div class="replies">
+                {{ children }}
+            </div>
+        {% endif %}
+    </div>
+{% endrecursetree %}

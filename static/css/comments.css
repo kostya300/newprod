@@ -1,7 +1,55 @@
+/* css/comments.css */
+.reply-form-container {
+    margin: 10px 0 0 40px;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.reply-form textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-actions {
+    text-align: right;
+}
+
+.form-actions button {
+    margin-left: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-btn {
+    background: #007cba;
+    color: white;
+}
+
+.cancel-btn {
+    background: #ccc;
+    color: #333;
+}
+
+
+
+
 /* === Отзывы === */
+
+
+
+
 .comments-section {
-    max-width: 1200px;
-    margin: 40px auto;
+
     padding: 0 20px;
 }
 
@@ -18,12 +66,14 @@
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 20px;
-    margin-bottom: 30px;
+    margin: 20px 0;
+    max-width: 100%;
+
 }
 
 .add-comment textarea {
     width: 100%;
-    min-height: 80px;
+    min-height: 100px;
     padding: 12px 15px;
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -33,7 +83,21 @@
     resize: vertical;
     transition: border-color 0.2s ease;
 }
-
+.add-comment .submit-comment {
+    align-self: flex-start;
+    background: #6a11cb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.add-comment form {
+    display: flex;
+    flex-direction: column;
+}
 .add-comment textarea:focus {
     outline: none;
     border-color: var(--btn-gradient-start);
@@ -70,6 +134,7 @@
     border-radius: 16px;
     padding: 16px;
     transition: box-shadow 0.2s ease;
+    position: relative;
 }
 
 .comment-item.reply {
@@ -78,7 +143,16 @@
     padding-left: 20px;
     background-color: rgba(106, 17, 203, 0.03);
 }
-
+.comment-item .replies .comment-item {
+    background: #f9f9f9;
+    border-color: #ddd;
+}
+.comment-item .replies {
+    margin-left: 40px;
+    padding-left: 16px;
+    border-left: 2px solid #007bff;
+    margin-top: 8px;
+}
 .comment-header {
     display: flex;
     align-items: center;
