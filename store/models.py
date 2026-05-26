@@ -61,8 +61,19 @@ class Product(models.Model):
         return 0
 
 
-# store/models.py
+class CommentLike(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'comment')
+
+
+# store/models.py
 class Comment(MPTTModel):
     product = models.ForeignKey(
         'Product',
@@ -89,6 +100,13 @@ class Comment(MPTTModel):
 
     class Meta:
         ordering = ['-created_at']
+
+    def is_liked_by(self, user):
+        if user.is_anonymous:
+            return False
+        if hasattr(self, 'user_liked'):
+            return self.user_liked  # из аннотации
+        return self.commentlike_set.filter(user=user).exists()
 
     def __str__(self):
         return f'{self.user.username}: {self.text[:50]}'

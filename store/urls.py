@@ -13,6 +13,7 @@ urlpatterns = [
     path('product/<int:product_id>/comment/create/', views.CommentCreateView.as_view(), name='comment_create'),
     path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
     path('like-review/', views.like_review, name='like_review'),
+    path('comment/like/', views.toggle_comment_like, name='toggle_comment_like'),
     path('cart/', views.cart, name='cart'),
     path('api/cart/', views.cart_api, name='cart_api'),
     path('api/order/', views.create_order, name='create_order'),

@@ -21,7 +21,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from yookassa import Configuration, Configuration, Payment
 import uuid
-from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite, ReviewLike, Comment
+from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite, ReviewLike, Comment,CommentLike
 import base64
 import time
 from django.views.decorators.csrf import csrf_exempt
@@ -584,19 +584,40 @@ class CommentCreateView(LoginRequiredMixin, View):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
+    featured_queryset = Product.objects.filter(
+        is_featured=True,
+        in_stock=True
+    )
+    paginator = Paginator(featured_queryset, 3)
+    page_number = request.GET.get('pgae', 1)
+    featured_products = paginator.get_page(page_number)
+
     gallery_images = product.images.all()
     main_image = product.image.url if product.image else '/static/images/no-image.png'
 
-    # Все комментарии, включая вложенные
-    comments = product.comments.all().order_by('tree_id', 'lft')
+    # Единый запрос на получение комментариев — с оптимизациями
+    comments = Comment.objects.filter(product=product).select_related('user')
     print(f"🔍 Найдено комментариев: {comments.count()}")
 
     user_rating = None
     if request.user.is_authenticated:
+        # Аннотируем, лайкнул ли пользователь
+        from django.db.models import Exists, OuterRef
+        comments = comments.annotate(
+            user_liked=Exists(
+                CommentLike.objects.filter(comment=OuterRef('pk'), user=request.user)
+            )
+        )
+        for comment in comments:
+            print(comment.id, comment.user_liked)
         user_review = product.reviews.filter(user=request.user).first()
-        if user_review:
-            user_rating = user_review.rating
-
+        user_rating = user_review.rating if user_review else None
+    else:
+        user_rating = None
+    comments = comments.order_by('tree_id', 'lft')
+    # Опционально: prefetch для лайков (если в шаблоне используется .count)
+    comments = comments.prefetch_related('commentlike_set')
+    print(f"🔍 Найдено комментариев: {comments.count()}")
     return render(request, 'store/category/cartoffthings.html', {
         'product': product,
         'gallery_images': gallery_images,
@@ -604,7 +625,37 @@ def product_detail(request, slug):
         'comments': comments,
         'user_rating': user_rating,
         'form': CommentCreateForm(),
+        'featured_products': featured_products,
+        'pagination': pagination,
+
     })
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def toggle_comment_like(request):
+    try:
+        data = json.loads(request.body)
+        comment_id = data.get('comment_id')
+        comment = Comment.objects.get(id=comment_id)
+        like, created = CommentLike.objects.get_or_create(user=request.user,comment=comment)
+        if not created:
+        # Лайк уже был — удаляем (отмена)
+            like.delete()
+            liked = False
+        else:
+            liked = True
+        total_likes = comment.commentlike_set.count()
+        return JsonResponse({
+            "status": "ok",
+            "liked": liked,
+            "total_likes": total_likes
+        })
+    except Comment.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Комментарий не найден"}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
 @csrf_exempt
 @login_required

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load mptt_tags %}
+{% load comment_extras %}
 {% block title %}{{ product.name }} — ВИКИ{% endblock %}
 
 {% block extra_css %}
@@ -101,7 +103,47 @@
     </section>
     <!-- Подключаем отзывы -->
     {% include "store/comments.html" with product=product %}
+<!-- Сетка из 6 карточек -->
+<section class="weekly-products-grid">
+    <!-- Карточки повторяются, позже можно заменить на разные товары -->
+    {% for product in featured_products %}
+    <a href="{% url 'product_detail' slug=product.slug %}" class="product-card-link">
+        <div class="weekly-product">
+            {% if product.is_new %}<span class="weekly-badge">ТОВАР НЕДЕЛИ</span>{% endif %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            <div class="title">{{ product.name }}</div>
 
+            <div class="price">от {{ product.price }} ₽</div>
+            <button class="action-btn" onclick="event.stopPropagation();">Успей заказать</button>
+
+        </div>
+    </a>
+    {% endfor %}
+</section>
+    <!-- Пагинация -->
+{% if featured_products.paginator.num_pages > 1 %}
+    <div class="pagination">
+        {% if featured_products.has_previous %}
+            <a href="?page={{ featured_products.previous_page_number }}" class="pagination-arrow">&lt;</a>
+        {% else %}
+            <span class="pagination-arrow disabled">&lt;</span>
+        {% endif %}
+
+        {% for num in featured_products.paginator.page_range %}
+            {% if featured_products.number == num %}
+                <span class="pagination-number active">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}" class="pagination-number">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if featured_products.has_next %}
+            <a href="?page={{ featured_products.next_page_number }}" class="pagination-arrow">&gt;</a>
+        {% else %}
+            <span class="pagination-arrow disabled">&gt;</span>
+        {% endif %}
+    </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -109,17 +151,46 @@
 
     </script>
     <script>
-        function bindLikeButtons() {
-            document.querySelectorAll('.like-btn').forEach(btn => {
-                btn.removeEventListener('click', handleLikeClick);
-                btn.addEventListener('click', handleLikeClick);
-            });
-        }
+        // Обновлённая функция
+        function handleLikeClick(btn) {
+            const commentId = btn.dataset.commentId;
+            const isLiked = btn.dataset.liked === 'true';
+            const counter = btn.querySelector('span');
 
-        function handleLikeClick(e) {
-            const btn = e.currentTarget;
-            alert('Лайк! (пока заглушка)');
-            // Позже добавим логику лайков
+            btn.disabled = true;
+
+            fetch('{% url "toggle_comment_like" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.getCSRFToken(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({comment_id: commentId})
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('Требуется авторизация');
+                        window.location.href = '/users/login/';
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    if (data.status === 'ok') {
+                        counter.textContent = data.total_likes;
+                        btn.dataset.liked = data.liked;
+                        btn.classList.toggle('liked', data.liked);
+                    }
+                })
+                .catch(err => {
+                    console.error('Ошибка лайка:', err);
+                    alert('Не удалось поставить лайк');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                });
         }
     </script>
     <script>
@@ -151,7 +222,31 @@
         }
 
         window.getCSRFToken = getCSRFToken;
+        // ================================
+        // 2 Likes
+        // ===============================
+        document.addEventListener('click', function (e) {
+            // Клик по кнопке лайка
+            const likeBtn = e.target.closest('.like-btn');
+            if (likeBtn) {
+                handleLikeClick(likeBtn);
+                return;
+            }
 
+            // Клик по кнопке "Ответить"
+            const replyBtn = e.target.closest('.reply-btn');
+            if (replyBtn) {
+                handleReplyClick(e);
+                return;
+            }
+
+            // Клик по кнопке "Удалить"
+            const deleteBtn = e.target.closest('.delete-btn');
+            if (deleteBtn) {
+                handleDeleteClick(deleteBtn);
+                return;
+            }
+        });
         // ===================================
         // 1. КОММЕНТАРИИ: Основная форма и ответы
         // ===================================
@@ -240,19 +335,24 @@
             <a href="/profile/${comment.user_slug}/" class="comment-author-link">
                 <strong>${escapeHTML(comment.user)}</strong>
             </a>
+            <div class="comment-avatar">
+            <img src="${comment.avatar}" alt="${comment.user}" width="25"
+                        height="25"
+                        style="border:1px solid #1c1c1c;border-radius:50%;">
+             </div>
             <span class="comment-date">${comment.created_at}</span>
         </div>
         <p class="comment-text">${escapeHTML(comment.text)}</p>
         <div class="comment-actions">
-            <button class="like-btn">❤️ <span>3</span></button>
+            <button class="like-btn"
+                    data-comment-id="${comment.id}"
+                     data-liked="${comment.is_liked}">
+                ❤️ <span>${comment.total_likes}</span>
+            </button>
             <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
             ${comment.is_my ? `<button class="delete-btn" data-comment-id="${comment.id}" title="Удалить комментарий">🗑️</button>` : ''}
         </div>
-        <div class="comment-avatar">
-            <img src="${comment.avatar}" alt="${comment.user}" width="25"
-                        height="25"
-                        style="border:1px solid #1c1c1c;border-radius:50%;">
-        </div>
+
         ${!comment.parent_id ? '<div class="replies"></div>' : ''}
     </div>`;
 
@@ -287,7 +387,7 @@
 
             // Инициализация
             bindReplyButtons();
-            bindLikeButtons();
+
             bindDeleteButtons();
         });
     </script>

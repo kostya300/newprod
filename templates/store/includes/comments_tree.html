@@ -1,6 +1,8 @@
-{% load static %}
 <!-- templates/store/includes/comments_tree.html -->
+
+{% load static %}
 {% load mptt_tags %}
+{% load comment_extras %}
 {% recursetree comments %}
     <div class="comment-item" data-comment-id="{{ node.id }}" data-parent-id="{{ node.parent_id|default:'' }}">
         <div class="comment-header">
@@ -11,6 +13,9 @@
             <div class="comment-avatar">
                 <img
                         src="
+
+
+
                                 {% if node.user.avatar %}{{ node.user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
                         alt="{{ node.user.username }}"
                         width="25"
@@ -23,13 +28,16 @@
         </div>
         <p class="comment-text">{{ node.text }}</p>
         <div class="comment-actions">
-            <button class="like-btn">❤️ <span>3</span></button>
+            <button class="like-btn"
+                    data-comment-id="{{ node.id }}"
+                    data-liked="{% if request.user.is_authenticated and node|is_liked_by:request.user %}true{% else %}false{% endif %}">
+                ❤️ <span>{{ node.commentlike_set.count }}</span>
+            </button>
             <button class="reply-btn" data-comment-id="{{ node.id }}">Ответить</button>
             {% if node.user == request.user %}
                 <button class="delete-btn" data-comment-id="{{ node.id }}" title="Удалить комментарий">🗑️</button>
             {% endif %}
         </div>
-
 
 
         <!-- Вложенные комментарии -->
