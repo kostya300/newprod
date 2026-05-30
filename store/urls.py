@@ -22,6 +22,7 @@ urlpatterns = [
     path('baskets/remove-one/<int:item_id>/', views.basket_remove_one, name='basket_remove_one'),
     path('baskets/remove/<int:item_id>/', views.basket_remove, name='basket_remove'),
     path('product_detail/<slug:slug>/', views.product_detail, name='product_detail'),
+    path('quick-view/<slug:slug>/', views.quick_view, name='quick_view'),
     path('save-rating/', views.save_rating, name='save_rating'),
     path('contacts/', views.contacts, name='contacts'),
     path('my-favorites/', views.my_favorites, name='my_favorites'),

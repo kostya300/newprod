@@ -42,7 +42,7 @@
                         <span class="star" data-value="{{ i }}">★</span>
                     {% endfor %}
                 </div>
-                <span class="reviews">(47 отзывов)</span>
+                <span class="reviews">({{ comments.count }} отзывов)</span>
             </div>
 
             <p class="product-price">{{ product.price }} ₽</p>
@@ -88,6 +88,12 @@
                         ❤️
                     {% endif %}
                 </button>
+            <button hx-get="{% url 'quick_view' product.slug %}"
+                        hx-target="#quick-view-modal"
+                        hx-trigger="click"
+                        class="quick-view-btn">
+                        📄 Подробное описание
+                </button>
             </div>
 
             <div class="delivery-info">
@@ -103,47 +109,64 @@
     </section>
     <!-- Подключаем отзывы -->
     {% include "store/comments.html" with product=product %}
-<!-- Сетка из 6 карточек -->
-<section class="weekly-products-grid">
-    <!-- Карточки повторяются, позже можно заменить на разные товары -->
-    {% for product in featured_products %}
-    <a href="{% url 'product_detail' slug=product.slug %}" class="product-card-link">
-        <div class="weekly-product">
-            {% if product.is_new %}<span class="weekly-badge">ТОВАР НЕДЕЛИ</span>{% endif %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            <div class="title">{{ product.name }}</div>
+    <!-- В product_detail.html -->
+    {% if recommended_products %}
+        <section class="recommended-products">
+            <h3>Рекомендуем</h3>
+            <div class="products-grid">
+                {% for rec in recommended_products %}
+                    <div class="product-card">
+                        <a href="{% url 'product_detail' slug=rec.slug %}">
+                            <img src="{{ rec.image.url }}" alt="{{ rec.name }}">
+                            <h4>{{ rec.name }}</h4>
+                            <p class="price">{{ rec.price }} ₽</p>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    <!-- Сетка из 6 карточек -->
+    <section class="weekly-products-grid">
+        <!-- Карточки повторяются, позже можно заменить на разные товары -->
+        {% for product in featured_products %}
+            <a href="{% url 'product_detail' slug=product.slug %}" class="product-card-link">
+                <div class="weekly-product">
+                    {% if product.is_new %}<span class="weekly-badge">ТОВАР НЕДЕЛИ</span>{% endif %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    <div class="title">{{ product.name }}</div>
 
-            <div class="price">от {{ product.price }} ₽</div>
-            <button class="action-btn" onclick="event.stopPropagation();">Успей заказать</button>
+                    <div class="price">от {{ product.price }} ₽</div>
+                    <button class="action-btn" onclick="event.stopPropagation();">Успей заказать</button>
 
-        </div>
-    </a>
-    {% endfor %}
-</section>
-    <!-- Пагинация -->
-{% if featured_products.paginator.num_pages > 1 %}
-    <div class="pagination">
-        {% if featured_products.has_previous %}
-            <a href="?page={{ featured_products.previous_page_number }}" class="pagination-arrow">&lt;</a>
-        {% else %}
-            <span class="pagination-arrow disabled">&lt;</span>
-        {% endif %}
-
-        {% for num in featured_products.paginator.page_range %}
-            {% if featured_products.number == num %}
-                <span class="pagination-number active">{{ num }}</span>
-            {% else %}
-                <a href="?page={{ num }}" class="pagination-number">{{ num }}</a>
-            {% endif %}
+                </div>
+            </a>
         {% endfor %}
+    </section>
+    <!-- Пагинация -->
+    {% if featured_products.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if featured_products.has_previous %}
+                <a href="?page={{ featured_products.previous_page_number }}" class="pagination-arrow">&lt;</a>
+            {% else %}
+                <span class="pagination-arrow disabled">&lt;</span>
+            {% endif %}
 
-        {% if featured_products.has_next %}
-            <a href="?page={{ featured_products.next_page_number }}" class="pagination-arrow">&gt;</a>
-        {% else %}
-            <span class="pagination-arrow disabled">&gt;</span>
-        {% endif %}
-    </div>
-{% endif %}
+            {% for num in featured_products.paginator.page_range %}
+                {% if featured_products.number == num %}
+                    <span class="pagination-number active">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}" class="pagination-number">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if featured_products.has_next %}
+                <a href="?page={{ featured_products.next_page_number }}" class="pagination-arrow">&gt;</a>
+            {% else %}
+                <span class="pagination-arrow disabled">&gt;</span>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -346,8 +369,8 @@
         <div class="comment-actions">
             <button class="like-btn"
                     data-comment-id="${comment.id}"
-                     data-liked="${comment.is_liked}">
-                ❤️ <span>${comment.total_likes}</span>
+                     >
+                ❤️ <span>0</span>
             </button>
             <button class="reply-btn" data-comment-id="${comment.id}">Ответить</button>
             ${comment.is_my ? `<button class="delete-btn" data-comment-id="${comment.id}" title="Удалить комментарий">🗑️</button>` : ''}

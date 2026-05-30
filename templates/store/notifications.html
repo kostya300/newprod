@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Уведомления — ВИКИ{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1><span class="gradient-text">УВЕДОМЛЕНИЯ</span></h1>
+    </section>
+
+    <section class="notifications-container">
+        {% if notifications %}
+            <div class="notifications-list">
+                {% for notif in notifications %}
+                    <div class="notification-item {% if notif.is_read %}unread{% endif %}">
+                        <div class="notification-header">
+                            <strong>{{ notif.title }}</strong>
+                            <span class="notification-time">{{ notif.created_at|date:"H:i" }}</span>
+                        </div>
+                        <p class="notification-message">{{ notif.message }}</p>
+                        {% if notif.url %}
+                            <a href="{{ notif.url }}" class="notification-link">Перейти</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">У вас пока нет уведомлений</p>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+{% endblock %}

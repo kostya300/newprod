@@ -21,7 +21,8 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from yookassa import Configuration, Configuration, Payment
 import uuid
-from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite, ReviewLike, Comment,CommentLike
+from .models import Category, Product, Basket, Order, OrderItem, Review, Favorite, ReviewLike, Comment, CommentLike, \
+    Notification
 import base64
 import time
 from django.views.decorators.csrf import csrf_exempt
@@ -34,9 +35,24 @@ from .utils import get_gigachat_token  # ← из utils.py
 from urllib.parse import quote  # ← для quote(user_query), если хотите
 import logging
 from django.core.cache import cache
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 logger = logging.getLogger(__name__)
 
-
+# === Функция для отправки уведомлений ===
+def send_user_notification(user_id, title, message, level='info'):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"user_{user_id}",
+        {
+            "type": "send.notification",
+            "message": {
+                "title": title,
+                "message": message,
+                "level": level
+            }
+        }
+    )
 def get_deal_of_day():
     deal = cache.get('deal_of_day')
     if not deal:
@@ -215,31 +231,36 @@ def product_search(request):
         'query': query
     })
 
-@csrf_exempt
 @login_required
 def basket_add(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=product_id)
 
-    # Получаем количество из POST
-    quantity = int(request.POST.get('quantity', 1))
-    if quantity < 1:
-        quantity = 1
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+        except (TypeError, ValueError):
+            quantity = 1
+        if quantity < 1:
+            quantity = 1
 
-    # Пытаемся найти товар в корзине
-    basket_item, created = Basket.objects.get_or_create(
-        user=request.user,
-        product=product,
-        defaults={'quantity': quantity}
-    )
+        basket_item, created = Basket.objects.get_or_create(
+            user=request.user,
+            product=product,
+            defaults={'quantity': quantity}
+        )
+        if not created:
+            basket_item.quantity += quantity
+            basket_item.save()
 
-    if not created:
-        # Если уже есть — увеличиваем
-        basket_item.quantity += quantity
-        basket_item.save()
-    # Если новый — создан с нужным количеством
+        total_items = sum(item.quantity for item in Basket.objects.filter(user=request.user))
 
-    # Возвращаемся на ту же страницу
-    return redirect(request.META['HTTP_REFERER'])
+        # Можно добавить сообщение
+        from django.contrib import messages
+        messages.success(request, f'{product.name} добавлен в корзину!')
+
+        return redirect(request.META.get('HTTP_REFERER', 'catalog'))
+
+    return redirect('catalog')
 
 
 def order_success(request, order_id):
@@ -581,15 +602,29 @@ class CommentCreateView(LoginRequiredMixin, View):
             })
 
         return JsonResponse({'error': form.errors}, status=400)
-
+def quick_view(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    return render(request, 'store/quick_view.html', {'product': product})
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
+    # Рекомендации: товары из той же категории, кроме текущего
+    recommended_products = Product.objects.filter(
+        category=product.category,
+        in_stock=True
+    ).exclude(
+        id=product.id
+    ).order_by('?')[:4]
+    viewed = request.session.get('viewed_products', [])
+    if product.id not in viewed:
+        viewed.insert(0, product.id)
+        viewed = viewed[:10]  # последние 10
+        request.session['viewed_products'] = viewed
     featured_queryset = Product.objects.filter(
         is_featured=True,
         in_stock=True
     )
     paginator = Paginator(featured_queryset, 3)
-    page_number = request.GET.get('pgae', 1)
+    page_number = request.GET.get('page', 1)
     featured_products = paginator.get_page(page_number)
 
     gallery_images = product.images.all()
@@ -620,6 +655,7 @@ def product_detail(request, slug):
     print(f"🔍 Найдено комментариев: {comments.count()}")
     return render(request, 'store/category/cartoffthings.html', {
         'product': product,
+        'recommended_products': recommended_products,
         'gallery_images': gallery_images,
         'main_image': main_image,
         'comments': comments,
@@ -776,7 +812,6 @@ def create_order(request):
     """API: создаёт заказ и платёж в YooKassa"""
     user = request.user
     data = request.data
-
     # Проверка авторизации
     if not user.is_authenticated:
         return Response({"error": "Требуется вход"}, status=401)
@@ -841,7 +876,15 @@ def create_order(request):
             order.yookassa_payment_id = payment.id
             order.status = payment.status
             order.save()
-
+            # уведомляем пользователя об оформлении заказа
+            # ✅ Уведомление: заказ оформлен (ожидает оплаты)
+            Notification.objects.create(
+                user=user,
+                title="Заказ оформлен",
+                message=f"Номер заказа: {order.id}. Ожидается оплата.",
+                level="success",
+                url=f"/order/success/{order.id}/"
+            )
             return Response({
                 "success": True,
                 "payment_url": payment.confirmation.confirmation_url
@@ -852,11 +895,25 @@ def create_order(request):
             logger.error(f"YooKassa error: {str(e)}")
             order.status = 'cancelled'
             order.save()
-            return Response({"error": "Ошибка при создании платежа"}, status=500)
-
+            # уведомление об ошибке
+            Notification.objects.create(
+                user=user,
+                title="Ошибка оплаты",
+                message=f"Не удалось оплатить заказ {order.id}.",
+                level="error",
+                url="/cart/"
+            )
     elif data.get('payment_method') == 'cash':
         order.status = 'created'
         order.save()
+        # ✅ Уведомление: заказ оформлен
+        Notification.objects.create(
+            user=user,
+            title="Заказ оформлен!",
+            message=f"Номер заказа: {order.id}. Оплата при получении.",
+            level="success",
+            url=f"/order/success/{order.id}/"
+        )
         Basket.objects.filter(user=user).delete()
         # Можно отправить email, уведомление в Telegram и т.д.
         return Response({
@@ -969,17 +1026,37 @@ def cart(request):
 
 @api_view(['GET'])
 def cart_api(request):
-    cart_items = Basket.objects.filter(user=request.user)
-    serializer = CartItemSerializer(cart_items, many=True)
-    return Response(serializer.data)
+    if not request.user.is_authenticated:
+        return Response({'items': [], 'total': 0, 'item_count': 0})
 
+    cache_key = f"cart_api_{request.user.id}"
+    data = cache.get(cache_key)
+    if data is None:
+        cart_items = Basket.objects.filter(user=request.user).select_related('product')
+        serializer = CartItemSerializer(cart_items, many=True)
+        total = sum(item.total_price for item in cart_items)
+        data = {
+            'items': serializer.data,
+            'total': total,
+            'item_count': len(serializer.data)
+        }
+        cache.set(cache_key, data, 10)  # Кэш на 10 секунд
+    return Response(data)
 
+def _render_cart_fragment(request):
+    cart_items = Basket.objects.filter(user=request.user).select_related('product')
+    cart_total = sum(item.total_price for item in cart_items)
+
+    return render(request, 'store/cart_fragment.html', {
+        'cart_items': cart_items,
+        'cart_total': cart_total
+    })
 @login_required
 def basket_add_one(request, item_id):
     item = get_object_or_404(Basket, id=item_id, user=request.user)
     item.quantity += 1
     item.save()
-    return redirect('cart')  # Возвращаемся в корзину
+    return _render_cart_fragment(request)
 
 
 @login_required
@@ -990,14 +1067,14 @@ def basket_remove_one(request, item_id):
         item.save()
     else:
         item.delete()
-    return redirect('cart')
+    return _render_cart_fragment(request)
 
 
 @login_required
 def basket_remove(request, item_id):
     item = get_object_or_404(Basket, id=item_id, user=request.user)
     item.delete()
-    return redirect('cart')
+    return _render_cart_fragment(request)
 
 
 def contacts(request):

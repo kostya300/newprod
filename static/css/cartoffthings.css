@@ -1,3 +1,75 @@
+/* === Кнопка "Быстрый просмотр / Подробное описание" === */
+.quick-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #6f42c1; /* Фиолетовый — как у "Информация" в меню */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(111, 66, 193, 0.2);
+}
+
+.quick-view-btn:hover {
+    background: #5a34a1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+
+.quick-view-btn:active {
+    transform: translateY(0);
+}
+
+/* Поддержка тёмной темы */
+.dark-theme .quick-view-btn {
+    background: #8a5cf6;
+    box-shadow: 0 2px 6px rgba(138, 92, 246, 0.3);
+}
+
+.dark-theme .quick-view-btn:hover {
+    background: #7a4ae6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .quick-view-btn {
+        font-size: 14px;
+        padding: 12px 16px;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Если хочешь "волну" при клике (Material-like) */
+.quick-view-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-view-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: width 0.6s, height 0.6s;
+}
+
+.quick-view-btn:active::after {
+    width: 300px;
+    height: 300px;
+}
+
 /* === Страница товара === */
 .product {
     margin-bottom: 20px;

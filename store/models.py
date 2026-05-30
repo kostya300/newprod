@@ -206,6 +206,27 @@ class PriceComparison(models.Model):
     def __str__(self):
         return f"{self.get_marketplace_display()} — {self.price} ₽"
 
+User = get_user_model()
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField("Заголовок", max_length=100)
+    message = models.TextField("Сообщение")
+    level = models.CharField(  # info, success, warning, error
+        max_length=20,
+        default='info'
+    )
+    is_read = models.BooleanField("Прочитано", default=False)
+    created_at = models.DateTimeField("Дата", auto_now_add=True)
+    url = models.URLField("Ссылка", blank=True, null=True)  # например, /order/123/
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Уведомление"
+        verbose_name_plural = "Уведомления"
+
+    def __str__(self):
+        return f"{self.title} — {self.user}"
 
 User = get_user_model()
 

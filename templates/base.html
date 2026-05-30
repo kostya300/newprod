@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{% block title %}ВИКИ — Магазин техники{% endblock %}</title>
     <!-- Блокирующий скрипт: применяем тему до загрузки стилей -->
+
     <script>
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
@@ -29,6 +30,7 @@
     <link rel="stylesheet" href="{% static 'css/dropdownbase.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdownbase2.css' %}">
     <link rel="stylesheet" href="{% static 'css/cart-badge.css' %}">
+    <link rel="stylesheet" href="{% static 'css/support-chat.css' %}">
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/ai-assistant.css' %}">
@@ -109,12 +111,22 @@
 
             <!-- Уведомления -->
             <li>
-                <a href="#">
+                <a href="{% url 'users:notifications' %}">
                     <i class='bx bx-bell icon'></i>
                     <span class="link-text">Уведомления</span>
+                    {% if user.is_authenticated and user.has_unread_notifications %}
+                        <span class="notification-badge">
+        {{ user.unread_notifications_count }}
+    </span>
+                    {% endif %}
                 </a>
             </li>
-
+            <li>
+                <a href="#" id="support-chat-toggle">
+                    <i class='bx bxs-message-rounded icon'></i>
+                    <span class="link-text">Чат с поддержкой</span>
+                </a>
+            </li>
             <!-- Контакты -->
             <li>
                 <a href="{% url 'contacts' %}">
@@ -150,13 +162,18 @@
 <!-- Markdown парсер -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
 <script>
-    // Глобально добавляем CSRF-токен ко всем HTMX-запросам
     document.body.addEventListener('htmx:beforeRequest', function (evt) {
-        const token = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (token && !evt.detail.headers['X-CSRFToken']) {
-            evt.detail.headers['X-CSRFToken'] = token.value;
+        const tokenInput = document.querySelector('[name="csrfmiddlewaretoken"]');
+        if (!tokenInput) {
+            console.error('❌ CSRF token input not found!');
+            return;
+        }
+        const token = tokenInput.value;
+        if (!evt.detail.headers['X-CSRFToken']) {
+            evt.detail.headers['X-CSRFToken'] = token;
+            console.log('✅ CSRF token added to HTMX request:', token.substring(0, 10) + '...');
         }
     });
 </script>
@@ -265,24 +282,53 @@
       id="hljs-dark" disabled>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <script>
     // Функция смены темы подсветки
-    function updateHighlightTheme() {
-        const isDark = document.documentElement.classList.contains('dark-theme');
-        document.getElementById('hljs-light').disabled = isDark;
-        document.getElementById('hljs-dark').disabled = !isDark;
-        setTimeout(() => hljs.highlightAll(), 100);
-    }
+    document.body.addEventListener('htmx:beforeRequest', function (evt) {
+        // Находим CSRF-токен
+        const tokenInput = document.querySelector('[name="csrfmiddlewaretoken"]');
+        if (!tokenInput) {
+            console.error('❌ Не найден input с [name="csrfmiddlewaretoken"]');
+            return;
+        }
+        const token = tokenInput.value;
+        if (!token) {
+            console.error('❌ CSRF-токен пустой!');
+            return;
+        }
 
-    // Инициализация
-    document.addEventListener('DOMContentLoaded', () => {
-        updateHighlightTheme();
-        hljs.highlightAll();
+        // ✅ Используем setRequestHeader — это работает всегда
+        try {
+            evt.detail.xhr.setRequestHeader('X-CSRFToken', token);
+            console.log('✅ CSRF токен добавлен в запрос:', token.substring(0, 10) + '...');
+        } catch (err) {
+            console.error('❌ Ошибка при установке заголовка:', err);
+        }
     });
 </script>
 <script src="{% static 'js/filter.js' %}"></script>
-
+<script src="{% static 'js/support-chat.js' %}"></script>
 {% block extra_js %}{% endblock %}
 
+<!-- Всплывающий чат с поддержкой -->
+<div class="support-chat" id="support-chat">
+    <div class="support-chat-header">
+        <span>💬 Чат с поддержкой</span>
+        <button id="support-chat-minimize">−</button>
+        <button id="support-chat-close">×</button>
+    </div>
+    <div class="support-chat-body" id="support-chat-body">
+        <div class="message bot">
+            <strong>Техподдержка:</strong><br>
+            Привет! Я — помощник ВИКИ. Как я могу помочь?
+        </div>
+    </div>
+    <div class="support-chat-footer">
+        <input type="text" id="support-chat-input" placeholder="Напишите сообщение...">
+        <button id="support-chat-send">➤</button>
+    </div>
+</div>
+<div id="quick-view-modal"></div>
 </body>
 </html>

@@ -13,7 +13,11 @@ class User(AbstractUser):
         db_table = "user"
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+    def unread_notifications_count(self):
+        return self.notifications.filter(is_read=False).count()
 
+    def has_unread_notifications(self):
+        return self.notifications.filter(is_read=False).exists()
     def __str__(self):
         return self.username
 class EmailVerificationToken(models.Model):

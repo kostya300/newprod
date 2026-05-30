@@ -17,7 +17,7 @@ from django.views.generic import FormView
 from django.contrib.auth import logout
 import logging
 from .models import EmailVerificationToken
-from store.models import Order
+from store.models import Order,Notification
 from django.views import generic
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -82,6 +82,18 @@ class UserRegisterView(View):
             print("❌ Форма невалидна:", form.errors)
             messages.error(request, "Пожалуйста, исправьте ошибки ниже.")
         return render(request, self.template_name, {'form': form})
+
+
+
+@login_required
+def notifications(request):
+    # Показываем все уведомления пользователя
+    notifications = request.user.notifications.all()
+    # Отмечаем как прочитанные при заходе
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'store/notifications.html', {
+        'notifications': notifications
+    })
 def verify_email(request, token):
     token_obj = get_object_or_404(EmailVerificationToken, token=token)
     user = token_obj.user

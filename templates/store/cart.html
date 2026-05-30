@@ -19,63 +19,18 @@
         <p class="typewriter-text"></p>
     </section>
 
-    <section class="cart-container" id="cart-container">
-        {% if cart_items %}
-            <div class="cart-items" id="cart-items-list">
-                {% for item in cart_items %}
-                    <div class="cart-item" id="item-{{ item.id }}">
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-image">
-                        <div class="item-info">
-                            <h3 class="item-name">{{ item.product.name }}</h3>
-                            <div class="item-controls">
-                                <!-- Уменьшить -->
-                                <form method="post" action="{% url 'basket_remove_one' item.id %}"
-                                      style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="qty-btn minus">−</button>
-                                </form>
-
-                                <!-- Количество -->
-                                <span class="quantity">{{ item.quantity }}</span>
-
-                                <!-- Увеличить -->
-                                <form method="post" action="{% url 'basket_add_one' item.id %}"
-                                      style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="qty-btn plus">+</button>
-                                </form>
-
-                                <!-- Цена -->
-                                <span class="item-price">{{ item.total_price }} ₽</span>
-                            </div>
-                        </div>
-
-                        <!-- Удалить -->
-                        <form method="post" action="{% url 'basket_remove' item.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="remove-btn">×</button>
-                        </form>
-                    </div>
-                {% endfor %}
-            </div>
-            <!-- Итог -->
-            <div class="cart-summary" id="cart-summary">
-                <div class="total">
-                    <strong>Итого:</strong>
-                    <span>{{ cart_total|floatformat:0 }} ₽</span>
-                </div>
-                <a href="{% url 'order' %}" class="checkout-btn">Оплатить</a>
-            </div>
-        {% else %}
-            <div class="empty-cart" id="empty-cart">
-                <p style="margin: 0 0 30px 0;">Ваша корзина пуста</p>
-                <a href="{% url 'catalog' %}" class="gradient-btn">Перейти в каталог</a>
-            </div>
-        {% endif %}
-    </section>
+    {% if cart_items %}
+        {% include "store/cart_fragment.html" %}
+    {% else %}
+        <div class="empty-cart" id="empty-cart">
+            <p style="margin: 0 0 30px 0;">Ваша корзина пуста</p>
+            <a href="{% url 'catalog' %}" class="gradient-btn">Перейти в каталог</a>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block extra_js %}
+
     <script src="{% static 'js/animateprintcart.js' %}"></script>
 
 

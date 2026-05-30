@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django_dump_load_utf8',
     'social_django',
     'django_vite',
+    'channels',
     'mptt',
 ]
 
@@ -78,6 +79,7 @@ TEMPLATES = [
                 # social auth context processor
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
+                'django.template.context_processors.csrf',
             ],
         },
     },

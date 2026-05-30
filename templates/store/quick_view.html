@@ -1,0 +1,213 @@
+<!-- templates/store/partials/quick_view.html -->
+<div class="quick-view-modal" id="quick-view-modal">
+    <div class="quick-view-content">
+        <span class="close"
+      hx-on="click: document.getElementById('quick-view-modal').innerHTML = ''"
+      style="cursor: pointer; font-size: 30px;">&times;</span>
+        <div class="quick-view-left">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="main-image">
+        </div>
+        <div class="quick-view-right">
+            <h2>{{ product.name }}</h2>
+            <p class="price">{{ product.price }} ₽</p>
+            {% if product.old_price %}
+                <p class="old-price">Старая цена: <span>{{ product.old_price }} ₽</span></p>
+            {% endif %}
+
+            <p>{{ product.get_short_description|default:product.name|truncatewords:20 }}</p>
+
+            <div class="product-actions">
+                <div class="quantity-control">
+                    <button class="qty-btn minus" onclick="changeQty(-1)">−</button>
+                    <span class="quantity" id="qv-quantity">1</span>
+                    <button class="qty-btn plus" onclick="changeQty(1)">+</button>
+                </div>
+
+                <form method="post" action="{% url 'basket_add' product.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" id="qv-quantity-input" value="1">
+                    <button type="submit" class="add-to-cart-btn">➕ В корзину</button>
+                </form>
+            </div>
+
+            <div class="delivery-info">
+                <p>🚚 Бесплатная доставка — завтра</p>
+                <p>📍 Самовывоз — сегодня</p>
+                <p>Сюда можно добавить расширенное описание...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function changeQty(delta) {
+        const qtyEl = document.getElementById('qv-quantity');
+        const input = document.getElementById('qv-quantity-input');
+        let qty = parseInt(qtyEl.textContent);
+        qty = Math.max(1, qty + delta);
+        qtyEl.textContent = qty;
+        input.value = qty;
+    }
+</script>
+
+<style>
+    /* === Переменные темы === */
+    .quick-view-modal,
+    .quick-view-content,
+    .quick-view-right {
+        --bg: #ffffff;           /* Основной фон */
+        --card-bg: #f9f9f9;      /* Фон карточки */
+        --text: #333333;         /* Основной текст */
+        --price: #d73a49;        /* Цвет цены */
+        --old-price: #6c757d;    /* Старая цена */
+        --border: #dee2e6;       /* Границы */
+        --btn-bg: #007bff;       /* Кнопки */
+        --btn-text: white;
+        --close-color: white;
+    }
+
+    /* === Тёмная тема === */
+    .dark-theme .quick-view-modal,
+    .dark-theme .quick-view-content,
+    .dark-theme .quick-view-right {
+        --bg: #1e1e1e;
+        --card-bg: #2d2d2d;
+        --text: #f0f0f0;
+        --price: #56d364;
+        --old-price: #8b949e;
+        --border: #444444;
+        --btn-bg: #0a5bcf;
+        --btn-text: white;
+        --close-color: #f0f0f0;
+    }
+
+    /* === Модальное окно === */
+    .quick-view-modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.8); /* Чуть темнее в обеих темах */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+        backdrop-filter: blur(4px);
+    }
+
+    .quick-view-content {
+        background: var(--bg);
+        border-radius: 12px;
+        max-width: 900px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border);
+    }
+
+    .quick-view-left {
+        flex: 1;
+        padding: 20px;
+        border-right: 1px solid var(--border);
+    }
+
+    .quick-view-left img {
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-view-right {
+        flex: 1;
+        padding: 30px;
+        color: var(--text);
+    }
+
+    .quick-view-right h2 {
+        color: var(--text);
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+    }
+
+    .quick-view-right .price {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--price);
+    }
+
+    .quick-view-right .old-price {
+        color: var(--old-price);
+        text-decoration: line-through;
+    }
+
+    .delivery-info p {
+        color: var(--text);
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    /* Кнопка закрытия */
+    .close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 30px;
+        color: var(--close-color);
+        cursor: pointer;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.3);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .close:hover {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Кнопки управления количеством */
+    .qty-btn {
+        background: var(--card-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .qty-btn:hover {
+        background: var(--border);
+    }
+
+    .add-to-cart-btn {
+        background: var(--btn-bg);
+        color: var(--btn-text);
+        border: none;
+    }
+
+    .add-to-cart-btn:hover {
+        opacity: 0.9;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .quick-view-content {
+            flex-direction: column;
+        }
+        .quick-view-left {
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+        }
+        .close {
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            width: 32px;
+            height: 32px;
+        }
+    }
+</style>

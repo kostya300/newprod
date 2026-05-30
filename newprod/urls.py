@@ -23,6 +23,7 @@ from store import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('rest_framework.urls', namespace='api_drf')),
+    path('store/', include('store.urls')),
     path('users/', include('users.urls', namespace='users')),
 
     path('', include("store.urls")),

@@ -1,0 +1,49 @@
+<!-- templates/store/cart_fragment.html -->
+{% load static %}
+<!-- templates/store/cart_partial.html -->
+<section class="cart-container" id="cart-container">
+    <div class="cart-items" id="cart-items-list">
+        {% for item in cart_items %}
+            <div class="cart-item" id="item-{{ item.id }}">
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-image">
+                <div class="item-info">
+                    <h3 class="item-name">{{ item.product.name }}</h3>
+                    <div class="item-controls">
+                        <!-- Уменьшить -->
+                        <button hx-post="{% url 'basket_remove_one' item.id %}"
+                                hx-target="#cart-container"
+                                hx-swap="outerHTML"
+                                class="qty-btn minus">−</button>
+
+                        <!-- Количество -->
+                        <span class="quantity">{{ item.quantity }}</span>
+
+                        <!-- Увеличить -->
+                        <button hx-post="{% url 'basket_add_one' item.id %}"
+                                hx-target="#cart-container"
+                                hx-swap="outerHTML"
+                                class="qty-btn plus">+</button>
+
+                        <!-- Цена -->
+                        <span class="item-price">{{ item.total_price }} ₽</span>
+                    </div>
+                </div>
+
+                <!-- Удалить -->
+                <button hx-post="{% url 'basket_remove' item.id %}"
+                        hx-target="#cart-container"
+                        hx-swap="outerHTML"
+                        class="remove-btn">×</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Итог -->
+    <div class="cart-summary" id="cart-summary">
+        <div class="total">
+            <strong>Итого:</strong>
+            <span>{{ cart_total|floatformat:0 }} ₽</span>
+        </div>
+        <a href="{% url 'order' %}" class="checkout-btn">Оплатить</a>
+    </div>
+</section>
