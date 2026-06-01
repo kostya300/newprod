@@ -66,6 +66,8 @@
                 </div>
 
                 <button type="submit" class="submit-btn">Войти</button>
+                {{ form.recaptcha.label_tag }}
+                {{ form.recaptcha }}
             </form>
 
             <div class="social-login-divider">
@@ -83,7 +85,8 @@
                    title="Найти в Google">
                     <img src="{% static 'images/icons/google.png' %}" alt="Google">
                 </a>
-                <a href="{% url 'social:begin' 'yandex-oauth2' %}" target="_blank" class="social-icon" title="Найти в Яндексе">
+                <a href="{% url 'social:begin' 'yandex-oauth2' %}" target="_blank" class="social-icon"
+                   title="Найти в Яндексе">
                     <img src="{% static 'images/icons/yandex.png' %}" alt="Яндекс">
                 </a>
             </div>

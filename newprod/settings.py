@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_vite',
     'channels',
     'mptt',
+    'django_recaptcha',
 ]
 
 MIDDLEWARE = [
@@ -258,6 +259,10 @@ YOOKASSA_SECRET_KEY = 'test_OXqW6YvD6mRvx6CR2zOQ0XVjoyz-UCnZGrAE9m3zp-M'
 # social auth configs for github
 SOCIAL_AUTH_GITHUB_KEY = 'Ov23lituFgUhJdHaGrFF'
 SOCIAL_AUTH_GITHUB_SECRET = 'ff2c53a1d9bd934e512ad8ac87110bdab65d7b31'
+
+# recaptcha v2 google
+RECAPTCHA_PUBLIC_KEY = '6LfrGwctAAAAAIRt-duUzWdb3rXsfk6s9x_Bsx_M'
+RECAPTCHA_PRIVATE_KEY = '6LfrGwctAAAAABx_UbGZKKfHcaYO7dp8CJAAtse1'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '48328434690-8dvgf5hd33d8rqd4ss5158b058evp1hv.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'

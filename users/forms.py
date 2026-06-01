@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from .models import User
 from .tasks import send_email_verification
+from django_recaptcha.fields import ReCaptchaField
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
@@ -55,6 +56,7 @@ class RegisterForm(UserCreationForm):
 
 
 class LoginForm(AuthenticationForm):
+    recaptcha = ReCaptchaField()
     username = forms.CharField(
         label="Имя пользователя",
         widget=forms.TextInput(attrs={'placeholder': 'Введите имя'})
