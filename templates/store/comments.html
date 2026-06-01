@@ -14,7 +14,7 @@
             </form>
         </div>
     {% else %}
-        <p><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить комментарий.</p>
+        <p class="login-to-comment"><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить комментарий.</p>
     {% endif %}
 
     <div class="comments-list" id="comments-list">

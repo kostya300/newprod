@@ -1,3 +1,30 @@
+/*logintocomment*/
+/* Уведомление о входе */
+.login-to-comment {
+    text-align: center;
+    font-size: 1rem;
+    color: #555;
+    margin: 20px 0;
+    padding: 15px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-to-comment a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.login-to-comment a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+
 /*delete comments*/
 
 .delete-btn {
@@ -17,6 +44,9 @@
     border-radius: 4px;
 }
 /*delete comments*/
+
+
+
 
 /* css/comments.css */
 .reply-form-container {

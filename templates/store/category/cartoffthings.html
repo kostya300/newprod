@@ -111,7 +111,7 @@
     {% include "store/comments.html" with product=product %}
     <!-- В product_detail.html -->
     {% if recommended_products %}
-        <section class="recommended-products">
+        <section class="recommended-products" style="margin-left: 25px;">
             <h3>Рекомендуем</h3>
             <div class="products-grid">
                 {% for rec in recommended_products %}
