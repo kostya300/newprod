@@ -24,7 +24,7 @@ wheels/
 *.egg
 
 # === Virtual Environment ===
-.env
+.env_local
 .venv
 env/
 venv/

@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
-
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z+w$_!drfy2@*2epn+7!77hj4#1%c(y01dm%i(()2=-odq0^o_'
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 # Application definition
 
@@ -94,11 +94,11 @@ WSGI_APPLICATION = 'newprod.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'newprod',
-        'USER': 'newprod',
-        'PASSWORD': '21',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT', cast=int),
     }
 }
 
@@ -156,10 +156,11 @@ LOGGING = {
     },
 }
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
+# Caches
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': config('CACHE_LOCATION'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'CONNECTION_POOL_KWARGS': {'max_connections': 50},
@@ -173,8 +174,9 @@ CACHES = {
 DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
 DJANGO_REDIS_IGNORE_EXCEPTIONS = True
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+# Celery
+CELERY_BROKER_URL = config('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
 CELERY_BEAT_SCHEDULE = {
     'update-price-comparison-daily': {
         'task': 'store.tasks.task_update_all_price_comparisons',
@@ -258,32 +260,32 @@ USE_I18N = True
 USE_TZ = True
 
 # youkassa
-YOOKASSA_SHOP_ID = '1360176'
-YOOKASSA_SECRET_KEY = 'test_OXqW6YvD6mRvx6CR2zOQ0XVjoyz-UCnZGrAE9m3zp-M'
+YOOKASSA_SHOP_ID = config('YOOKASSA_SHOP_ID')
+YOOKASSA_SECRET_KEY = config('YOOKASSA_SECRET_KEY')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 # social auth configs for github
-SOCIAL_AUTH_GITHUB_KEY = 'Ov23lituFgUhJdHaGrFF'
-SOCIAL_AUTH_GITHUB_SECRET = 'ff2c53a1d9bd934e512ad8ac87110bdab65d7b31'
+SOCIAL_AUTH_GITHUB_KEY = config('SOCIAL_AUTH_GITHUB_KEY')
+SOCIAL_AUTH_GITHUB_SECRET = config('SOCIAL_AUTH_GITHUB_SECRET')
 
 # recaptcha v2 google
-RECAPTCHA_PUBLIC_KEY = '6LfrGwctAAAAAIRt-duUzWdb3rXsfk6s9x_Bsx_M'
-RECAPTCHA_PRIVATE_KEY = '6LfrGwctAAAAABx_UbGZKKfHcaYO7dp8CJAAtse1'
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY')
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '48328434690-8dvgf5hd33d8rqd4ss5158b058evp1hv.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'kostya.barnung@gmail.com'
-EMAIL_HOST_PASSWORD = 'mdxz jspq yelo cajc'
-DEFAULT_FROM_EMAIL = 'kostya.barnung@gmail.com'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER')
 
 # Yandex OAuth2
-SOCIAL_AUTH_YANDEX_OAUTH2_KEY = '3adaa4af6dc845229bc521dcd36e7106'
-SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = '7ab4638d92c344ee9f2648f603f8a899'
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config('SOCIAL_AUTH_YANDEX_OAUTH2_KEY')
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = config('SOCIAL_AUTH_YANDEX_OAUTH2_SECRET')
 # Опционально: какие данные запрашивать
 SOCIAL_AUTH_YANDEX_OAUTH2_SCOPE = [
     'login:email',

@@ -6,9 +6,13 @@
 {% recursetree comments %}
     <div class="comment-item" data-comment-id="{{ node.id }}" data-parent-id="{{ node.parent_id|default:'' }}">
         <div class="comment-header">
-            <a href="{{ node.user.profile.get_absolute_url }}" class="comment-author-link">
+            {% if user.is_authenticated %}
+                <a href="{% url 'users:profile' %}" class="comment-author-link">
+                    <strong>{{ node.user.username }}</strong>
+                </a>
+            {% else %}
                 <strong>{{ node.user.username }}</strong>
-            </a>
+            {% endif %}
             <!-- Аватар-->
             <div class="comment-avatar">
                 <img
