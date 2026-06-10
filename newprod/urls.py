@@ -22,14 +22,26 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 from django.urls import path, include
 from store import views
+
+from django.http import Http404
+
+
+def test_404(request):
+    raise Http404()
+
+
 # Создаём защищённые представления
 class ProtectedSpectacularAPIView(SpectacularAPIView):
     permission_classes = [IsAuthenticated]
 
+
 class ProtectedSpectacularSwaggerView(SpectacularSwaggerView):
     permission_classes = [IsAuthenticated]
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('test-404/', test_404),
     path('auth/', include('rest_framework.urls', namespace='api_drf')),
     path('store/', include('store.urls')),
     path('users/', include('users.urls', namespace='users')),

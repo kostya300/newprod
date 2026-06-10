@@ -1,0 +1,23 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}404 — Страница не найдена{% endblock %}
+
+{% block content %}
+    <section class="error-page">
+        <div class="error-content">
+            <h1>404</h1>
+            <h2>Упс! Такой страницы не существует.</h2>
+            <p>Мы не смогли найти запрашиваемую вами страницу. Возможно, она была удалена или перемещена.</p>
+            <div class="error-actions">
+                <a href="{% url 'home' %}" class="btn btn-primary">На главную</a>
+                <a href="javascript:history.back()" class="btn btn-outline">Назад</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/errors.css' %}">
+{% endblock %}

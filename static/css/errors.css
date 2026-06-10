@@ -1,0 +1,76 @@
+/* static/css/errors.css */
+
+.error-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 40px 20px;
+    background: #f9f9f9;
+}
+
+.error-content {
+    text-align: center;
+    max-width: 480px;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.error-content h1 {
+    font-size: 80px;
+    margin: 0 0 20px;
+    font-weight: 800;
+    color: #333;
+}
+
+.error-content h2 {
+    font-size: 28px;
+    margin: 0 0 16px;
+    color: #222;
+}
+
+.error-content p {
+    color: #666;
+    margin-bottom: 32px;
+}
+
+.error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-primary {
+    background: #0d6efd;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #0b5ed7;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #0d6efd;
+    border: 2px solid #0d6efd;
+}
+
+.btn-outline:hover {
+    background: #f0f0f0;
+}
