@@ -864,7 +864,7 @@ def create_order(request):
                 },
                 "confirmation": {
                     "type": "redirect",
-                    "return_url": "http://127.0.0.1:8000/cart/"
+                    "return_url": request.build_absolute_uri('/cart/')
                 },
                 "capture": True,
                 "description": f"Заказ №{order.id}",

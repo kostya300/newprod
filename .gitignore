@@ -27,8 +27,8 @@ wheels/
 .env
 .venv
 env/
+.venv/
 venv/
-
 # === Django ===
 staticfiles/
 *.log
@@ -68,15 +68,13 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+# === Docker ===
+Dockerfile
+docker-compose.yml
+nginx.conf
 
 # === Jupyter Notebook ===
 .ipynb_checkpoints
-
-# === Docker ===
-docker-compose.yml
-docker-compose.override.yml
-compose.yaml
-compose.override.yaml
 
 # === Environment variables ===
 .env.local

@@ -27,7 +27,14 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://myunitmyunit1.ru',
+    'https://myunitmyunit1.ru'
+]
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,7 +51,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'django_dump_load_utf8',
     'social_django',
-    'django_vite',
+    # 'django_vite',
     'channels',
     'mptt',
     'django_recaptcha',
@@ -123,17 +130,9 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.github.GithubOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.yandex.YandexOAuth2',
+    'social_core.backends.vk.VKIDOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
-DJANGO_VITE = {
-    "default": {
-        "dev_mode": True,
-        "dev_server_protocol": "http",
-        "dev_server_host": "localhost",
-        "dev_server_port": 5173,
-        "static_url_prefix": "react",
-    }
-}
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -258,7 +257,8 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
-
+SOCIAL_AUTH_VK_OAUTH2_KEY = config('SOCIAL_AUTH_VK_OAUTH2_KEY')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config('SOCIAL_AUTH_VK_OAUTH2_SECRET')
 # youkassa
 YOOKASSA_SHOP_ID = config('YOOKASSA_SHOP_ID')
 YOOKASSA_SECRET_KEY = config('YOOKASSA_SECRET_KEY')
@@ -302,3 +302,15 @@ STATICFILES_DIRS = [
 ]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Фиксируем HTTPS для всех ссылок и редиректов внутри Django
+SECURE_SSL_REDIRECT = False  # Оставьте False, так как редирект делает Nginx
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Настройка для python-social-auth (вход через Google/GitHub)
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+# Поддержка заголовков прокси-сервера
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+# Принудительный перевод social-auth на обновленный API VK ID
+SOCIAL_AUTH_VK_OAUTH2_AUTHORIZATION_URL = 'https://vk.com'
+SOCIAL_AUTH_VK_OAUTH2_ACCESS_TOKEN_URL = 'https://vk.com'

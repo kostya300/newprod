@@ -56,7 +56,7 @@ class RegisterForm(UserCreationForm):
 
 
 class LoginForm(AuthenticationForm):
-    recaptcha = ReCaptchaField()
+
     username = forms.CharField(
         label="Имя пользователя",
         widget=forms.TextInput(attrs={'placeholder': 'Введите имя'})
