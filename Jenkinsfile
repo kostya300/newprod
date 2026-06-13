@@ -16,17 +16,20 @@ pipeline {
 
         stage('Deploy to VPS') {
             steps {
-                sshagent (credentials: [SSH_KEY_ID]) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: env.SSH_KEY_ID,
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
                     sh '''
                         echo "🚀 Deploying to ${DEPLOY_PATH}..."
-                        ssh ${DEPLOY_USER}@${DEPLOY_HOST} 'mkdir -p /tmp/deploy'
-                        ssh ${DEPLOY_USER}@${DEPLOY_HOST} 'rm -f /tmp/deploy/files.tar.gz'
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} 'mkdir -p /tmp/deploy'
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} 'rm -f /tmp/deploy/files.tar.gz'
 
                         tar -czf - store/ users/ newprod/ templates/ static/ media/ \
                             --exclude='__pycache__' --exclude='*.pyc' | \
-                            ssh ${DEPLOY_USER}@${DEPLOY_HOST} 'cat > /tmp/deploy/files.tar.gz'
+                            ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} 'cat > /tmp/deploy/files.tar.gz'
 
-                        ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} '
                             cd /var/www/newprod &&
                             rm -rf store/ users/ newprod/ templates/ static/ media/ &&
                             tar -xzf /tmp/deploy/files.tar.gz &&
@@ -40,9 +43,12 @@ pipeline {
 
         stage('Restart backend') {
             steps {
-                sshagent (credentials: [SSH_KEY_ID]) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: env.SSH_KEY_ID,
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} '
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} '
                             cd /var/www/newprod &&
                             docker compose restart backend &&
                             sleep 5 &&
