@@ -26,6 +26,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
+          set -e  # ← остановиться при любой ошибке
           echo "🚀 Deploying to $DEPLOY_HOST..."
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /tmp/deploy'
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'rm -f /tmp/deploy/files.tar.gz'
