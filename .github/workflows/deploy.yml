@@ -26,23 +26,26 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          set -e  # ← остановиться при любой ошибке
+          set -e
           echo "🚀 Deploying to $DEPLOY_HOST..."
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /tmp/deploy'
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'rm -f /tmp/deploy/files.tar.gz'
 
+          # ✅ Архивируем ТОЛЬКО store/, users/, templates/, newprod/ — БЕЗ media/ и static/
           tar -czf - \
             --exclude='__pycache__' --exclude='*.pyc' \
-            store/ users/ newprod/ templates/ static/ media/ | \
+            store/ users/ newprod/ templates/ | \
             ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'cat > /tmp/deploy/files.tar.gz'
 
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
             cd /var/www/newprod &&
-            rm -rf store/ users/ newprod/ templates/ static/ media/ &&
+            # ✅ Удаляем ТОЛЬКО store/, users/, templates/, newprod/ — media/ и static/ ОСТАЮТСЯ!
+            rm -rf store/ users/ newprod/ templates/ &&
             tar -xzf /tmp/deploy/files.tar.gz &&
             rm /tmp/deploy/files.tar.gz &&
-            echo "✅ Files deployed."
+            echo "✅ Files deployed (media/static preserved)."
           '
+
       - name: Restart backend
         env:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
