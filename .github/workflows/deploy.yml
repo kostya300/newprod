@@ -30,8 +30,9 @@ jobs:
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /tmp/deploy'
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'rm -f /tmp/deploy/files.tar.gz'
 
-          tar -czf - store/ users/ newprod/ templates/ static/ media/ \
-            --exclude='__pycache__' --exclude='*.pyc' | \
+          tar -czf - \
+            --exclude='__pycache__' --exclude='*.pyc' \
+            store/ users/ newprod/ templates/ static/ media/ | \
             ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'cat > /tmp/deploy/files.tar.gz'
 
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
@@ -41,7 +42,6 @@ jobs:
             rm /tmp/deploy/files.tar.gz &&
             echo "✅ Files deployed."
           '
-
       - name: Restart backend
         env:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
