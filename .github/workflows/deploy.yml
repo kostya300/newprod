@@ -31,8 +31,8 @@ jobs:
           ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST 'rm -f /tmp/deploy/files.tar.gz'
 
           tar -czf - store/ users/ newprod/ templates/ static/ media/ \
-              --exclude='__pycache__' --exclude='*.pyc' | \
-          ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST 'cat > /tmp/deploy/files.tar.gz'
+            --exclude='__pycache__' --exclude='*.pyc' | \
+            ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'cat > /tmp/deploy/files.tar.gz'
 
           ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST '
             cd /var/www/newprod &&
