@@ -30,23 +30,22 @@ jobs:
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /tmp/deploy'
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'rm -f /tmp/deploy/files.tar.gz'
 
-          # ✅ Архивируем ВСЁ, кроме media/, static/, __pycache__, *.pyc
+          # ✅ Архивируем всё, кроме media/, __pycache__, *.pyc (но ВКЛЮЧАЕМ static/)
           tar -czf - \
             --exclude='media/' \
-            --exclude='static/' \
             --exclude='__pycache__' \
             --exclude='*.pyc' \
             --exclude='*.pyo' \
             --exclude='*.pyd' \
-            store/ users/ newprod/ templates/ | \
+            store/ users/ newprod/ templates/ static/ | \
             ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'cat > /tmp/deploy/files.tar.gz'
 
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
             cd /var/www/newprod &&
-            rm -rf store/ users/ newprod/ templates/ &&
+            rm -rf store/ users/ newprod/ templates/ static/ &&
             tar -xzf /tmp/deploy/files.tar.gz &&
             rm /tmp/deploy/files.tar.gz &&
-            echo "✅ Files deployed (media/static preserved)."
+            echo "✅ Files deployed (media preserved, static updated)."
           '
 
       - name: Full rebuild with cache cleanup
