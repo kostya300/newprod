@@ -4,7 +4,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # деплой только при пуше в main (можно добавить others)
+      - main
 
 jobs:
   deploy:
@@ -19,7 +19,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts || true
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Deploy files to VPS
         env:
@@ -27,14 +27,14 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
           echo "🚀 Deploying to $DEPLOY_HOST..."
-          ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST 'mkdir -p /tmp/deploy'
-          ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST 'rm -f /tmp/deploy/files.tar.gz'
+          ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /tmp/deploy'
+          ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'rm -f /tmp/deploy/files.tar.gz'
 
           tar -czf - store/ users/ newprod/ templates/ static/ media/ \
             --exclude='__pycache__' --exclude='*.pyc' | \
             ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'cat > /tmp/deploy/files.tar.gz'
 
-          ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST '
+          ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
             cd /var/www/newprod &&
             rm -rf store/ users/ newprod/ templates/ static/ media/ &&
             tar -xzf /tmp/deploy/files.tar.gz &&
@@ -47,7 +47,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          ssh -o StrictHostKeyChecking=accept-new $DEPLOY_USER@$DEPLOY_HOST '
+          ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
             cd /var/www/newprod &&
             docker compose restart backend &&
             sleep 5 &&
