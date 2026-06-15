@@ -93,7 +93,7 @@ class IndexView(ListView):
         except (PageNotAnInteger, EmptyPage):
             products = paginator.page(1)
 
-        context['products'] = products  # ← не featured_products, а products
+        context['featured_products'] = products
         context['deal_product'] = get_deal_of_day()
         context['categories'] = Category.objects.filter(is_active=True)[:6]
 
