@@ -3,7 +3,7 @@ from django_ratelimit.decorators import ratelimit
 import requests
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -17,7 +17,7 @@ from django.views.generic import FormView
 from django.contrib.auth import logout
 import logging
 from .models import EmailVerificationToken
-from store.models import Order,Notification
+from store.models import Order, Notification
 from django.views import generic
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -25,7 +25,10 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.urls import reverse
 from .tasks import send_email_verification
+from django.utils.translation import gettext_lazy as _
 logger = logging.getLogger(__name__)
+
+
 def get_email_from_yandex(backend, details, response, user=None, *args, **kwargs):
     """
     Получает email из профиля Яндекса, если он не пришёл.
@@ -37,6 +40,7 @@ def get_email_from_yandex(backend, details, response, user=None, *args, **kwargs
             if emails:
                 details['email'] = emails[0]
     return {'details': details}
+
 
 @method_decorator(ratelimit(key='ip', rate='3/m'), name='post')
 @method_decorator(ratelimit(key='post:email', rate='5/m'), name='post')
@@ -84,7 +88,6 @@ class UserRegisterView(View):
         return render(request, self.template_name, {'form': form})
 
 
-
 @login_required
 def notifications(request):
     # Показываем все уведомления пользователя
@@ -94,11 +97,13 @@ def notifications(request):
     return render(request, 'store/notifications.html', {
         'notifications': notifications
     })
+
+
 def verify_email(request, token):
     token_obj = get_object_or_404(EmailVerificationToken, token=token)
     user = token_obj.user
     if user.is_verified:
-        messages.info(request,"Ваш аккаунт уже активирован")
+        messages.info(request, "Ваш аккаунт уже активирован")
     else:
         user.is_verified = True
         user.save()
@@ -106,7 +111,9 @@ def verify_email(request, token):
     # Удаляем токен после использования
     token_obj.delete()
     return redirect('users:login')
-@method_decorator(ratelimit(key='ip', rate='5/m'), name='post') # 5 попыток с IP в минуту
+
+
+@method_decorator(ratelimit(key='ip', rate='5/m'), name='post')  # 5 попыток с IP в минуту
 @method_decorator(ratelimit(key='post:username', rate='3/m'), name='post')
 class UserLoginView(View):
     template_name = 'store/login.html'  # Убедитесь, что путь правильный
@@ -142,6 +149,7 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+
 class ProfileView(LoginRequiredMixin, View):
     """
     Представление профиля пользователя.
@@ -150,6 +158,7 @@ class ProfileView(LoginRequiredMixin, View):
     """
     template_name = 'store/profile.html'
     login_url = '/users/login/'
+
     def get(self, request):
         user = request.user
 
@@ -165,12 +174,25 @@ class ProfileView(LoginRequiredMixin, View):
         context = {
             'user': user,
             'city': city,
-            'order_count':order_count
+            'order_count': order_count
             # 'weather' — временно убрано
         }
         return render(request, self.template_name, context)
 
 
+class DeleteProfileView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            # Удаляем профиль, но оставляем комментарии (они привязаны к auth_user)
+            user.delete()
+            logout(request)
+            messages.success(request, _("Ваш профиль был успешно удалён."))
+        except Exception as e:
+            messages.error(request, _("Ошибка при удалении профиля: {}").format(str(e)))
+        return redirect('users:logout')
+    def get(self, request, *args, **kwargs):
+        return redirect('users:profile')
 @login_required
 def settings_view(request):
     user = request.user

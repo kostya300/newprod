@@ -130,7 +130,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.github.GithubOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.yandex.YandexOAuth2',
-    'social_core.backends.vk.VKIDOAuth2',
+    'social_core.backends.vk.VKOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 LOGGING = {
@@ -257,8 +257,8 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
-SOCIAL_AUTH_VK_OAUTH2_KEY = config('SOCIAL_AUTH_VK_OAUTH2_KEY')
-SOCIAL_AUTH_VK_OAUTH2_SECRET = config('SOCIAL_AUTH_VK_OAUTH2_SECRET')
+#SOCIAL_AUTH_VK_OAUTH2_KEY = config('SOCIAL_AUTH_VK_OAUTH2_KEY')
+#SOCIAL_AUTH_VK_OAUTH2_SECRET = config('SOCIAL_AUTH_VK_OAUTH2_SECRET')
 # youkassa
 YOOKASSA_SHOP_ID = config('YOOKASSA_SHOP_ID')
 YOOKASSA_SECRET_KEY = config('YOOKASSA_SECRET_KEY')
@@ -312,5 +312,5 @@ SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 # Принудительный перевод social-auth на обновленный API VK ID
-SOCIAL_AUTH_VK_OAUTH2_AUTHORIZATION_URL = 'https://vk.com'
-SOCIAL_AUTH_VK_OAUTH2_ACCESS_TOKEN_URL = 'https://vk.com'
+#SOCIAL_AUTH_VK_OAUTH2_AUTHORIZATION_URL = 'https://vk.com'
+#SOCIAL_AUTH_VK_OAUTH2_ACCESS_TOKEN_URL = 'https://vk.com'

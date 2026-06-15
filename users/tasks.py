@@ -22,7 +22,7 @@ def send_email_verification(user_id, domain):
         token = token_obj.token
         # Генерируем ссылку
         verification_link = reverse('users:verify_email', args=[token])
-        full_link = f"http://{domain}{verification_link}"
+        full_link = f"https://{domain}{verification_link}"
         # Подготавливаем HTML-письмо
         html_message = render_to_string('info/verification.html', {
             'user': user,
