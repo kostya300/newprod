@@ -5,16 +5,18 @@
 }
 
 .deal-card {
-    max-width: 790px;
+    max-width: 900px;
+    width: 100%;
     margin: 0 auto;
+    padding: 20px;
     background: var(--card-bg, #fff);
     border: 1px solid var(--border-color, #e0e0e0);
     border-radius: 16px;
-    overflow: hidden;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row; /* ← ключевое изменение! */
+    gap: 24px;
+    align-items: center; /* ← по центру по вертикали */
 }
 
 /* Адаптивность: на мобильных — стекаем */
@@ -25,28 +27,29 @@
 }
 
 .deal-content {
-    flex: 1;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 12px;
+    flex: 1 1 50%;
+    min-width: 0;
 }
 
 .deal-image {
-    flex: 1;
+    flex: 0 0 300px; /* фиксированная ширина 300px, не растягивается */
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    border-radius: 0 16px 16px 0;
+    border-radius: 12px;
 }
 
 .deal-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     transition: transform 0.5s ease;
 }
 
-.deal-image img:hover {
+.deal-image:hover img {
     transform: scale(1.05);
 }
 
@@ -159,17 +162,18 @@
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .countdown-timer {
-        font-size: 1.4rem;
-    }
-
-    .deal-content {
-        padding: 20px;
-        text-align: center;
+    .deal-card {
+        flex-direction: column;
+        padding: 16px;
+        gap: 16px;
     }
 
     .deal-image {
-        border-radius: 16px;
-        height: 200px;
+        width: 100%;
+        height: 250px;
+    }
+
+    .deal-image img {
+        object-fit: contain; /* на мобильных — лучше показать всё изображение без обрезки */
     }
 }
