@@ -74,7 +74,6 @@ class IndexView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Получаем page из GET
         page = self.request.GET.get('page', 1)
         try:
             page = int(page)
@@ -83,23 +82,18 @@ class IndexView(ListView):
         except (ValueError, TypeError):
             page = 1
 
-        # Фильтруем и ОБРЕЗАЕМ до 6 товаров (как в FBV)
-        featured_products_list = Product.objects.filter(
-            is_featured=True,
-            in_stock=True
-        )[:6]
+        # ← Пагинируем ВСЕ товары (или только в наличии)
+        products_list = Product.objects.filter(in_stock=True)
 
-
-        # Пагинация: по 3 на страницу
-        paginator = Paginator(featured_products_list, 3)
+        per_page = 3
+        paginator = Paginator(products_list, per_page)
 
         try:
-            featured_products = paginator.page(page)
+            products = paginator.page(page)
         except (PageNotAnInteger, EmptyPage):
-            featured_products = paginator.page(1)
+            products = paginator.page(1)
 
-        # Добавляем в контекст
-        context['featured_products'] = featured_products
+        context['products'] = products  # ← не featured_products, а products
         context['deal_product'] = get_deal_of_day()
         context['categories'] = Category.objects.filter(is_active=True)[:6]
 

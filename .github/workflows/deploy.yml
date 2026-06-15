@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to VPS
 
 on:
@@ -31,30 +30,40 @@ jobs:
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'mkdir -p /tmp/deploy'
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'rm -f /tmp/deploy/files.tar.gz'
 
-          # ✅ Архивируем ТОЛЬКО store/, users/, templates/, newprod/ — БЕЗ media/ и static/
+          # ✅ Архивируем ВСЁ, кроме media/, static/, __pycache__, *.pyc
           tar -czf - \
-            --exclude='__pycache__' --exclude='*.pyc' \
+            --exclude='media/' \
+            --exclude='static/' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='*.pyo' \
+            --exclude='*.pyd' \
             store/ users/ newprod/ templates/ | \
             ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" 'cat > /tmp/deploy/files.tar.gz'
 
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
             cd /var/www/newprod &&
-            # ✅ Удаляем ТОЛЬКО store/, users/, templates/, newprod/ — media/ и static/ ОСТАЮТСЯ!
             rm -rf store/ users/ newprod/ templates/ &&
             tar -xzf /tmp/deploy/files.tar.gz &&
             rm /tmp/deploy/files.tar.gz &&
             echo "✅ Files deployed (media/static preserved)."
           '
 
-      - name: Restart backend
+      - name: Full rebuild with cache cleanup
         env:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
           ssh -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" '
             cd /var/www/newprod &&
-            docker compose restart backend &&
-            sleep 5 &&
-            docker compose ps backend
+            #Очищаем Redis
+            docker exec newprod-redis-1 redis-cli FLUSHALL 2>/dev/null || true &&
+            # Очищаем __pycache__
+            docker exec newprod-backend-1 find /app -name "*.pyc" -delete 2>/dev/null || true
+            docker exec newprod-backend-1 find /app -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true &&
+            docker compose down &&
+            docker compose up -d --build &&
+            sleep 15 &&
+            docker compose ps
           '
-          echo "✅ Backend restarted"
+          echo "✅ Full rebuild completed"
