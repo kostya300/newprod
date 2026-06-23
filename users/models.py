@@ -1,23 +1,48 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
+# users/models.py
+from django.db import models
+import uuid
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
+
+# ... ваши импорты и EmailVerificationToken ...
+
 class User(AbstractUser):
-    phone = models.CharField("Телефон", max_length=15, blank=True)
-    avatar = models.ImageField("Аватар", upload_to="avatars/", blank=True, null=True)
-    bonus_points = models.PositiveIntegerField("Бонусные баллы", default=0)
-    discount = models.DecimalField("Скидка (%)", max_digits=3, decimal_places=1, default=0.0)
-    is_verified = models.BooleanField('Email подтверждён', default=False)
+    phone = models.CharField(_("Телефон"), max_length=15, blank=True)
+    avatar = models.ImageField(_("Аватар"), upload_to="avatars/", blank=True, null=True)
+    bonus_points = models.PositiveIntegerField(_("Бонусные баллы"), default=0)
+    discount = models.DecimalField(_("Скидка (%)"), max_digits=3, decimal_places=1, default=0.0)
+    is_verified = models.BooleanField(_('Email подтверждён'), default=False)
+
+    # 🔑 НОВЫЕ ПОЛЯ ДЛЯ TELEGRAM (TASK-1.3)
+    telegram_chat_id = models.BigIntegerField(
+        verbose_name=_("ID чата Telegram"),
+        null=True,
+        blank=True,
+        unique=True,
+        help_text=_("Уникальный ID чата пользователя в Telegram")
+    )
+    is_subscribed = models.BooleanField(
+        verbose_name=_("Подписан на уведомления"),
+        default=False,
+        help_text=_("Если True — пользователь получает уведомления через Telegram")
+    )
     class Meta:
         db_table = "user"
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+
     def unread_notifications_count(self):
         return self.notifications.filter(is_read=False).count()
 
     def has_unread_notifications(self):
         return self.notifications.filter(is_read=False).exists()
+
     def __str__(self):
         return self.username
 class EmailVerificationToken(models.Model):

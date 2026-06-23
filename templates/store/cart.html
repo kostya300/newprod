@@ -27,6 +27,25 @@
             <a href="{% url 'catalog' %}" class="gradient-btn">Перейти в каталог</a>
         </div>
     {% endif %}
+<!-- 📬 Подписка на email-рассылку -->
+<!-- 🔔 Подписка на рассылку (без формы) -->
+{% if request.user.is_authenticated %}
+    <div style="margin-top: 40px; text-align: center; padding: 20px; border-top: 1px solid #e0e0e0;">
+        {% if request.user.is_subscribed %}
+            <p>✅ Вы подписаны на рассылку!</p>
+            <p>📧 Письма будут приходить на: <strong>{{ request.user.email }}</strong></p>
+        {% else %}
+            <p>🔔 Подпишитесь на рассылку о новых товарах и заказах</p>
+            <a
+                href="{% url 'subscribe' %}?action=subscribe"
+                class="gradient-btn"
+                style="margin-top: 10px; padding: 10px 20px; display: inline-block; text-decoration: none; color: white;"
+            >
+                📬 Подписаться на рассылку
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

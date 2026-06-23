@@ -1,12 +1,14 @@
 import re
 from django.db.models import Avg
+from django.urls import reverse
 from django.utils.formats import date_format
 from django.utils.timezone import localtime
 from django.views import View
 from django.views.decorators.http import require_http_methods
-
+from common.utils import send_telegram_message
 from newprod import settings
 import requests
+from django.core.mail import send_mail
 from rest_framework.response import Response
 from .forms import CommentCreateForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -14,6 +16,8 @@ from django.views.generic import ListView, CreateView
 from django.contrib.admin.templatetags.admin_list import pagination
 from django.core.paginator import Page, Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
+from django.utils import timezone
 from flatbuffers.flexbuffers import Object
 from rest_framework.decorators import api_view
 from sympy.integrals.meijerint_doc import category
@@ -92,9 +96,11 @@ class IndexView(ListView):
             products = paginator.page(page)
         except (PageNotAnInteger, EmptyPage):
             products = paginator.page(1)
+        deal_products = Product.objects.filter(is_featured=True, in_stock=True).order_by('?')[:3]
 
+        context['deal_products'] = deal_products
         context['featured_products'] = products
-        context['deal_product'] = get_deal_of_day()
+
         context['categories'] = Category.objects.filter(is_active=True)[:6]
 
         return context
@@ -800,12 +806,30 @@ Configuration.account_id = settings.YOOKASSA_SHOP_ID
 Configuration.secret_key = settings.YOOKASSA_SECRET_KEY
 
 
+def subscribe(request):
+    """
+    Подписка/отписка по GET-запросу.
+    """
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('login'))
+
+    action = request.GET.get('action')
+    if action == 'subscribe':
+        request.user.is_subscribed = True
+        request.user.save()
+    elif action == 'unsubscribe':
+        request.user.is_subscribed = False
+        request.user.save()
+
+    return HttpResponseRedirect(reverse('cart'))
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order(request):
-    """API: создаёт заказ и платёж в YooKassa"""
+    """API: создаёт заказ и отправляет email-уведомления"""
     user = request.user
     data = request.data
+
     # Проверка авторизации
     if not user.is_authenticated:
         return Response({"error": "Требуется вход"}, status=401)
@@ -848,8 +872,54 @@ def create_order(request):
     OrderItem.objects.bulk_create(order_items)
     # Удаление товаров
     cart_items.delete()
+
+    # 📨 Email-уведомления
+    try:
+        # Письмо пользователю
+        user_email = user.email or data.get('email')
+        if user_email:
+            user_message = (
+                f"✅ Заказ №{order.id} успешно оформлен!\n\n"
+                f"📦 Сумма: {order.total_amount} ₽\n"
+                f"🚚 Доставка: {order.delivery_type}\n"
+                f"📍 Адрес: {order.city}, {order.address}\n"
+                f"📞 Телефон: {order.phone}\n"
+                f"💰 Способ оплаты: {order.payment_method}\n\n"
+                f"👉 Проверьте почту для оплаты (если выбрана карта)\n"
+                f"👉 Или готовьтесь к получению заказа"
+            )
+            send_mail(
+                subject=f"Заказ #{order.id} — ВИКИ",
+                message=user_message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user_email],
+                fail_silently=False,
+            )
+
+        # Письмо менеджеру
+        manager_email = "менеджер@ваш-домен.ru"  # замените на реальный email
+        manager_message = (
+            f"🔔 <b>Новый заказ на сайте ВИКИ!</b>\n"
+            f"🛒 Номер: <code>#{order.id}</code>\n"
+            f"💰 Сумма: <b>{order.total_amount} ₽</b>\n"
+            f"👤 Пользователь: {user.email or user.username}\n"
+            f"📞 Телефон: {order.phone}\n"
+            f"📦 Доставка: {order.delivery_type}\n"
+            f"📅 {timezone.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+        send_mail(
+            subject=f"🔔 Заказ #{order.id}",
+            message=manager_message,
+            from_email=settings.EMAIL_DEFAULT_FROM_EMAIL,
+            recipient_list=[manager_email],
+            fail_silently=False,
+        )
+
+        logger.info(f"✅ Email sent for order #{order.id} to user={user_email}, manager={manager_email}")
+    except Exception as e:
+        logger.error(f"Email send failed: {e}")
+
     if data.get('payment_method') == 'card':
-        # Создаём платёж в YooKassa
         try:
             payment = Payment.create({
                 "amount": {
@@ -870,8 +940,8 @@ def create_order(request):
             order.yookassa_payment_id = payment.id
             order.status = payment.status
             order.save()
-            # уведомляем пользователя об оформлении заказа
-            # ✅ Уведомление: заказ оформлен (ожидает оплаты)
+
+            # Уведомление пользователя об оплате
             Notification.objects.create(
                 user=user,
                 title="Заказ оформлен",
@@ -897,10 +967,11 @@ def create_order(request):
                 level="error",
                 url="/cart/"
             )
+
     elif data.get('payment_method') == 'cash':
         order.status = 'created'
         order.save()
-        # ✅ Уведомление: заказ оформлен
+        # Уведомление пользователя
         Notification.objects.create(
             user=user,
             title="Заказ оформлен!",
@@ -908,8 +979,6 @@ def create_order(request):
             level="success",
             url=f"/order/success/{order.id}/"
         )
-        Basket.objects.filter(user=user).delete()
-        # Можно отправить email, уведомление в Telegram и т.д.
         return Response({
             "success": True,
             "redirect_url": f"/order/success/{order.id}/",

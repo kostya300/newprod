@@ -19,34 +19,38 @@
 </section>
 <!-- Товар дня с таймером -->
 <!-- Товар дня -->
-{% if deal_product %}
+{% if deal_products %}
     <section class="deal-of-day">
-        <div class="deal-card">
-            <div class="deal-content">
-                <h2>Товар дня</h2>
-                <p class="deal-tagline">Успей купить по суперцене!</p>
-                <div class="deal-info">
-                    <h3>{{ deal_product.name }}</h3>
-                    <div class="deal-price">
-                        <span class="current-price">{{ deal_product.price }} ₽</span>
-                        {% if deal_product.old_price %}
-                            <span class="old-price">{{ deal_product.old_price }} ₽</span>
-                        {% endif %}
+        {% with product=deal_products.0 %}
+            <div class="deal-card">
+                <div class="deal-content">
+                    <h2>Товар дня</h2>
+                    <p class="deal-tagline">Успей купить по суперцене!</p>
+                    <div class="deal-info">
+                        <h3>{{ product.name }}</h3>
+                        <div class="deal-price">
+                            <span class="current-price">{{ product.price }} ₽</span>
+                            {% if product.old_price %}
+                                <span class="old-price">{{ product.old_price }} ₽</span>
+                            {% endif %}
+                        </div>
                     </div>
+                    <div class="countdown-timer" data-end="{{ product.deal_ends_at|date:'c' }}">
+                        <div class="timer-item"><span id="hours-{{ product.id }}">00</span>ч</div>
+                        <div class="timer-item"><span id="minutes-{{ product.id }}">00</span>м</div>
+                        <div class="timer-item"><span id="seconds-{{ product.id }}">00</span>с</div>
+                    </div>
+                    <a href="{% url 'product_detail' slug=product.slug %}" class="btn-buy-now">
+                        Купить сейчас →
+                    </a>
                 </div>
-                <div class="countdown-timer">
-                    <div class="timer-item"><span id="hours">00</span>ч</div>
-                    <div class="timer-item"><span id="minutes">00</span>м</div>
-                    <div class="timer-item"><span id="seconds">00</span>с</div>
+                <div class="deal-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
                 </div>
-                <a href="{% url 'product_detail' slug=deal_product.slug %}" class="btn-buy-now">
-                    Купить сейчас →
-                </a>
             </div>
-            <div class="deal-image">
-                <img src="{{ deal_product.image.url }}" alt="{{ deal_product.name }}">
-            </div>
-        </div>
+        {% endwith %}
+
+        <!-- Если в будущем понадобится — можно добавить кнопки навигации или доты -->
     </section>
 {% endif %}
 <!-- Сетка из 6 карточек -->

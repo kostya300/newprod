@@ -15,6 +15,7 @@ urlpatterns = [
     path('like-review/', views.like_review, name='like_review'),
     path('comment/like/', views.toggle_comment_like, name='toggle_comment_like'),
     path('cart/', views.cart, name='cart'),
+    path('api/subscribe/', views.subscribe, name='subscribe'),
     path('api/cart/', views.cart_api, name='cart_api'),
     path('api/order/', views.create_order, name='create_order'),
     path('baskets/add/<int:product_id>/', views.basket_add, name='basket_add'),
