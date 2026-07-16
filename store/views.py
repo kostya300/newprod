@@ -5,7 +5,7 @@ from django.utils.formats import date_format
 from django.utils.timezone import localtime
 from django.views import View
 from django.views.decorators.http import require_http_methods
-from common.utils import send_telegram_message
+
 from newprod import settings
 import requests
 from django.core.mail import send_mail

@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,6 +53,11 @@ INSTALLED_APPS = [
     'django_dump_load_utf8',
     'social_django',
     # 'django_vite',
+    # vk
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.vk',
     'channels',
     'mptt',
     'django_recaptcha',
@@ -67,6 +73,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'newprod.urls'
@@ -239,7 +246,7 @@ SPECTACULAR_SETTINGS = {
         }
     },
     'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
-    #'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
+    # 'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAdminUser'],
 }
 
 LOGIN_URL = '/users/login/'
@@ -257,8 +264,8 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
-#SOCIAL_AUTH_VK_OAUTH2_KEY = config('SOCIAL_AUTH_VK_OAUTH2_KEY')
-#SOCIAL_AUTH_VK_OAUTH2_SECRET = config('SOCIAL_AUTH_VK_OAUTH2_SECRET')
+SOCIAL_AUTH_VK_OAUTH2_KEY = config('SOCIAL_AUTH_VK_OAUTH2_KEY')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = config('SOCIAL_AUTH_VK_OAUTH2_SECRET')
 # youkassa
 YOOKASSA_SHOP_ID = config('YOOKASSA_SHOP_ID')
 YOOKASSA_SECRET_KEY = config('YOOKASSA_SECRET_KEY')
@@ -285,7 +292,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-
+DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER')
 
 # Yandex OAuth2
 SOCIAL_AUTH_YANDEX_OAUTH2_KEY = config('SOCIAL_AUTH_YANDEX_OAUTH2_KEY')
@@ -316,5 +323,5 @@ SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 # Принудительный перевод social-auth на обновленный API VK ID
-#SOCIAL_AUTH_VK_OAUTH2_AUTHORIZATION_URL = 'https://vk.com'
-#SOCIAL_AUTH_VK_OAUTH2_ACCESS_TOKEN_URL = 'https://vk.com'
+# SOCIAL_AUTH_VK_OAUTH2_AUTHORIZATION_URL = 'https://vk.com'
+# SOCIAL_AUTH_VK_OAUTH2_ACCESS_TOKEN_URL = 'https://vk.com'

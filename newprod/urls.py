@@ -45,9 +45,10 @@ urlpatterns = [
     path('auth/', include('rest_framework.urls', namespace='api_drf')),
     path('store/', include('store.urls')),
     path('users/', include('users.urls', namespace='users')),
+    path('accounts/', include('allauth.urls')),
 
     path('', include("store.urls")),
-    path('oauth/', include('social_django.urls', namespace='social')),
+    path('social-auth/', include('social_django.urls', namespace='social')),
     path('api/', include('newprod.api.urls')),
     path('order/success/<int:order_id>/', views.order_success, name='order_success'),
     path('orders/history/', views.order_history, name='order_history'),

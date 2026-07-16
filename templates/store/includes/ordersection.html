@@ -133,48 +133,50 @@
         document.getElementById('order-form').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData.entries());
-
-            const csrftoken = getCookie('csrftoken');
-            if (!csrftoken) {
-                console.error('❌ CSRF token не найден в куках!');
-                alert('Ошибка: CSRF token отсутствует. Попробуйте перезагрузить страницу.');
+            // ✅ Получаем токен из input, а не из куки
+            const csrftokenInput = document.querySelector('[name="csrfmiddlewaretoken"]');
+            if (!csrftokenInput) {
+                console.error('❌ CSRF input не найден в форме!');
+                alert('Ошибка: CSRF токен отсутствует. Попробуйте перезагрузить страницу.');
                 return;
             }
+            const csrftoken = csrftokenInput.value;
+            console.log('✅ CSRF токен найден в input:', csrftoken.substring(0, 10) + '...');
 
-            console.log('✅ CSRF token найден:', csrftoken.substring(0, 10) + '...');
+            const formData = new FormData(this); // ← оставляем FormData
 
             fetch('/api/order/', {
                 method: 'POST',
+
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,  // ✅ Обязательно
+                    'X-CSRFToken': csrftoken,
                 },
-                body: JSON.stringify(data),
-                credentials: 'same-origin'  // ✅ Обязательно — иначе куки не отправятся
+                body: formData,
+                credentials: 'same-origin'
             })
                 .then(response => {
-                    console.log('➡️ Статус ответа:', response.status, response.statusText);
+                    console.log('➡️ Статус:', response.status);
                     if (!response.ok) {
                         return response.text().then(text => {
-                            console.error('❌ Тело ошибки:', text);
-                            throw new Error(`HTTP error! status: ${response.status}`);
+                            console.error('❌ Ошибка:', text);
+                            throw new Error(`HTTP error! ${response.status}`);
                         });
                     }
                     return response.json();
                 })
                 .then(result => {
                     if (result.payment_url) {
-                        // Онлайн-оплата
                         window.location.href = result.payment_url;
                     } else if (result.redirect_url) {
-                        // Наличные → страница успеха
                         window.location.href = result.redirect_url;
                     } else {
                         alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
                     }
                 })
+                .catch(error => {
+                    console.error('❌ Запрос не удался:', error);
+                    alert('Ошибка при оформлении заказа. Попробуйте снова.');
+                });
         });
 
         // Остальные функции — без изменений

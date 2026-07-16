@@ -1,0 +1,41 @@
+<!-- templates/store/socialaccount/login.html -->
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}Вход через {{ provider.name }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login-vkid-custom.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="social-login-container">
+        <section class="social-login-card">
+            <div class="social-login-header">
+                <img src="{% static 'images/icons/vk.png' %}" alt="VK" class="social-icon vk">
+                <h2>Вход через VK</h2>
+            </div>
+
+            <div class="social-login-message">
+                <p class="info-text">
+                    Вы собираетесь войти, используя стороннюю учетную запись из VK.
+                </p>
+
+                <form method="post" class="social-login-form">
+                    {% csrf_token %}
+                    <button type="submit" class="vk-continue-btn">
+                        Продолжить
+                    </button>
+                </form>
+            </div>
+
+            <div class="social-login-footer">
+                <p>
+                    Нет аккаунта?
+                    <a href="{% url 'users:register' %}">Зарегистрироваться</a>
+                </p>
+            </div>
+        </section>
+    </main>
+{% endblock %}

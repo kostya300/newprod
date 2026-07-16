@@ -1,0 +1,185 @@
+/* static/css/login-vkid-custom.css */
+:root {
+  --button-bg: #3684ce;
+  --button-bg-hover: #2b6cb0;
+}
+
+/* 🌙 Тёмная тема */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --button-bg: #4776e6;
+    --button-bg-hover: #3b5bc5;
+  }
+
+  .social-login-header img.social-icon,
+  .social-login-header .social-icon.vk {
+    filter: brightness(1.2) contrast(1.1); /* улучшение видимости иконки на тёмном фоне */
+  }
+}
+
+/* 🧱 БАЗОВЫЕ СТИЛИ */
+.social-login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+  padding: 20px;
+}
+
+.social-login-card {
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-sizing: border-box;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.social-login-header {
+  margin-bottom: 28px;
+}
+
+.social-login-header img.social-icon,
+.social-login-header .social-icon.vk {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.social-login-header img.social-icon:hover,
+.social-login-header .social-icon.vk:hover {
+  transform: scale(1.1);
+}
+
+.social-login-header h2 {
+  margin: 0;
+  font-size: 1.75em;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.social-login-message {
+  margin-bottom: 30px;
+}
+
+.info-text {
+  font-size: 1em;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  word-wrap: break-word;
+}
+
+.social-login-form {
+  margin: 0;
+}
+
+.vk-continue-btn {
+  background-color: var(--button-bg);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  font-size: 1em;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  touch-action: manipulation; /* улучшает отклик на мобильных */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vk-continue-btn:hover {
+  background-color: var(--button-bg-hover);
+  transform: translateY(-1px);
+}
+
+.vk-continue-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.vk-continue-btn:focus {
+  outline: 2px solid var(--button-bg-hover);
+  outline-offset: 2px;
+}
+
+.social-login-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.social-login-footer p {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.social-login-footer a {
+  color: var(--link-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.social-login-footer a:hover,
+.social-login-footer a:focus {
+  text-decoration: underline;
+}
+
+/* 📱 АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+@media (max-width: 640px) {
+  .social-login-container {
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .social-login-card {
+    padding: 32px 24px;
+    max-width: 100%;
+  }
+
+  .social-login-header h2 {
+    font-size: 1.5em;
+  }
+
+  .info-text {
+    font-size: 0.95em;
+  }
+
+  .vk-continue-btn {
+    padding: 14px 28px;
+    font-size: 1em;
+  }
+
+  .social-login-header img.social-icon,
+  .social-login-header .social-icon.vk {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .social-login-header h2 {
+    font-size: 1.3em;
+  }
+
+  .info-text {
+    font-size: 0.9em;
+    margin-bottom: 16px;
+  }
+
+  .vk-continue-btn {
+    padding: 12px 24px;
+    font-size: 0.95em;
+  }
+
+  .social-login-footer {
+    padding-top: 16px;
+  }
+}
