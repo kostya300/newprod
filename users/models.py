@@ -18,20 +18,6 @@ class User(AbstractUser):
     bonus_points = models.PositiveIntegerField(_("Бонусные баллы"), default=0)
     discount = models.DecimalField(_("Скидка (%)"), max_digits=3, decimal_places=1, default=0.0)
     is_verified = models.BooleanField(_('Email подтверждён'), default=False)
-
-    # 🔑 НОВЫЕ ПОЛЯ ДЛЯ TELEGRAM (TASK-1.3)
-    telegram_chat_id = models.BigIntegerField(
-        verbose_name=_("ID чата Telegram"),
-        null=True,
-        blank=True,
-        unique=True,
-        help_text=_("Уникальный ID чата пользователя в Telegram")
-    )
-    is_subscribed = models.BooleanField(
-        verbose_name=_("Подписан на уведомления"),
-        default=False,
-        help_text=_("Если True — пользователь получает уведомления через Telegram")
-    )
     class Meta:
         db_table = "user"
         verbose_name = "Пользователь"
